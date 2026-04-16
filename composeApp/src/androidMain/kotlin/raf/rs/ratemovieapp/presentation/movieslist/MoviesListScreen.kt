@@ -179,9 +179,12 @@ private fun MovieListItem(movie: Movie, onClick: () -> Unit) {
             )
             Text("${movie.year} • ${movie.runtimeMinutes} min")
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Text("★", modifier = Modifier.semantics { contentDescription = "Rating star" })
+                Text("★")
                 Spacer(Modifier.width(6.dp))
-                Text("${movie.imdbRating} (${movie.imdbVotes})")
+                Text(
+                    "${movie.imdbRating} (${movie.imdbVotes})",
+                    modifier = Modifier.semantics { contentDescription = "IMDB rating ${movie.imdbRating} with ${movie.imdbVotes} votes" }
+                )
             }
             Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                 movie.genres.take(3).forEach { genre ->

@@ -249,9 +249,7 @@ private fun JsonObject.genres(): List<Genre> {
                     Genre(id, item.string("name") ?: "Unknown")
                 }
                 is JsonPrimitive -> {
-                    if (item.isString) {
-                        null
-                    } else null
+                    null
                 }
                 else -> null
             }

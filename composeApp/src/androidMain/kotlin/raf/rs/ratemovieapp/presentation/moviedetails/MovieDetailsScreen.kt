@@ -154,9 +154,12 @@ fun MovieDetailsScreen(
 
                             Row(horizontalArrangement = Arrangement.spacedBy(16.dp), verticalAlignment = Alignment.CenterVertically) {
                                 Row(verticalAlignment = Alignment.CenterVertically) {
-                                    Text("★", modifier = Modifier.semantics { contentDescription = "Rating star" })
+                                    Text("★")
                                     Spacer(Modifier.width(4.dp))
-                                    Text("${d.imdbRating} (${d.imdbVotes})")
+                                    Text(
+                                        "${d.imdbRating} (${d.imdbVotes})",
+                                        modifier = Modifier.semantics { contentDescription = "IMDB rating ${d.imdbRating} with ${d.imdbVotes} votes" }
+                                    )
                                 }
                                 Text("TMDB ${d.tmdbRating}")
                             }
