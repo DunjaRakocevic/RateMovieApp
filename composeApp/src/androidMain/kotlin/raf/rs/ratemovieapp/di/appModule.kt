@@ -28,13 +28,13 @@ val appModule = module {
         }
     }
 
-    single {
+    single<Ktorfit> {
         Ktorfit.Builder()
             .baseUrl("https://rma.finlab.rs/")
-            .httpClient(get())
+            .httpClient(get<HttpClient>())
             .build()
     }
 
-    single<MoviesApi> { get<Ktorfit>().create() }
+    single<MoviesApi> { get<Ktorfit>().create<MoviesApi>() }
     single<MoviesRepository> { MoviesRepositoryImpl(get(), get()) }
 }
