@@ -20,9 +20,10 @@ val appModule = module {
     }
 
     single {
+        val jsonConfig = get<Json>()
         HttpClient(OkHttp) {
             install(ContentNegotiation) {
-                json(get<Json>())
+                json(jsonConfig)
             }
         }
     }

@@ -18,15 +18,11 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.FilterList
-import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.AssistChip
 import androidx.compose.material3.Badge
 import androidx.compose.material3.BadgedBox
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -85,7 +81,7 @@ fun MoviesListScreen(
                         }
                     ) {
                         IconButton(onClick = { onEvent(Event.FilterClicked) }) {
-                            Icon(Icons.Default.FilterList, contentDescription = "Filters")
+                            Text("Filter")
                         }
                     }
                 }
@@ -181,8 +177,8 @@ private fun MovieListItem(movie: Movie, onClick: () -> Unit) {
             )
             Text("${movie.year} • ${movie.runtimeMinutes} min")
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Icon(Icons.Default.Star, contentDescription = null, modifier = Modifier.size(16.dp))
-                Spacer(Modifier.width(4.dp))
+                Text("★")
+                Spacer(Modifier.width(6.dp))
                 Text("${movie.imdbRating} (${movie.imdbVotes})")
             }
             Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {

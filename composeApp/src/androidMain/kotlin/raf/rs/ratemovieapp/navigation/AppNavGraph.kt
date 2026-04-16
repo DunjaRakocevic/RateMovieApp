@@ -8,7 +8,9 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import org.koin.androidx.compose.koinViewModel
+import raf.rs.ratemovieapp.navigation.NavResultKeys.ACTIVE_FILTERS
 import raf.rs.ratemovieapp.presentation.filter.FilterScreen
+import raf.rs.ratemovieapp.presentation.filter.FilterParams
 import raf.rs.ratemovieapp.presentation.filter.FilterViewModel
 import raf.rs.ratemovieapp.presentation.filter.returnFilters
 import raf.rs.ratemovieapp.presentation.movieslist.MoviesListContract
@@ -37,18 +39,28 @@ fun AppNavGraph() {
                 state = vm.state,
                 effects = vm.effects,
                 onEvent = vm::onEvent,
-                onNavigateToFilters = { navController.navigate(Destinations.FILTER) },
+                onNavigateToFilters = {
+                    navController.currentBackStackEntry
+                        ?.savedStateHandle
+                        ?.set(ACTIVE_FILTERS, vm.state.value.appliedFilters)
+                    navController.navigate(Destinations.FILTER)
+                },
                 onNavigateToDetails = { id -> navController.navigate("${Destinations.MOVIE_DETAILS}/$id") }
             )
         }
 
         composable(Destinations.FILTER) {
             val vm: FilterViewModel = koinViewModel()
+            val initialFilters = navController.previousBackStackEntry
+                ?.savedStateHandle
+                ?.get<FilterParams>(ACTIVE_FILTERS)
+                ?: FilterParams()
 
             FilterScreen(
                 state = vm.state,
                 effects = vm.effects,
                 onEvent = vm::onEvent,
+                initialDraft = initialFilters,
                 onApply = { params -> navController.returnFilters(params) },
                 onBack = { navController.popBackStack() }
             )

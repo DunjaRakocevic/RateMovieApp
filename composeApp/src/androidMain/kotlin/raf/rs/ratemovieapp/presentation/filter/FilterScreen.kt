@@ -44,11 +44,13 @@ fun FilterScreen(
     state: StateFlow<State>,
     effects: Flow<Effect>,
     onEvent: (Event) -> Unit,
+    initialDraft: FilterParams,
     onApply: (FilterParams) -> Unit,
     onBack: () -> Unit
 ) {
     val s by state.collectAsState()
 
+    LaunchedEffect(initialDraft) { onEvent(Event.InitializeDraft(initialDraft)) }
     LaunchedEffect(Unit) { onEvent(Event.ScreenStarted) }
 
     LaunchedEffect(Unit) {

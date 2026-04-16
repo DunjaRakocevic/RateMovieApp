@@ -34,6 +34,10 @@ class FilterViewModel(
 
     fun onEvent(event: Event) {
         when (event) {
+            is Event.InitializeDraft -> {
+                _state.updateAndPersist { it.copy(draft = event.value) }
+            }
+
             Event.ScreenStarted -> {
                 if (!started) {
                     started = true

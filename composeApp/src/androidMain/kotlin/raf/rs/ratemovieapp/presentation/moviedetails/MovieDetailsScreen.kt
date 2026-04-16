@@ -20,14 +20,10 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.PlayArrow
-import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.AssistChip
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -128,7 +124,7 @@ fun MovieDetailsScreen(
                                     .clickable { onEvent(Event.PlayTrailerClicked) },
                                 contentAlignment = Alignment.Center
                             ) {
-                                Icon(Icons.Default.PlayArrow, contentDescription = "Play trailer")
+                                Text("▶", style = MaterialTheme.typography.titleLarge)
                             }
                             AsyncImage(
                                 model = d.posterUrl,
@@ -152,7 +148,7 @@ fun MovieDetailsScreen(
 
                             Row(horizontalArrangement = Arrangement.spacedBy(16.dp), verticalAlignment = Alignment.CenterVertically) {
                                 Row(verticalAlignment = Alignment.CenterVertically) {
-                                    Icon(Icons.Default.Star, contentDescription = null, modifier = Modifier.size(16.dp))
+                                    Text("★")
                                     Spacer(Modifier.width(4.dp))
                                     Text("${d.imdbRating} (${d.imdbVotes})")
                                 }
