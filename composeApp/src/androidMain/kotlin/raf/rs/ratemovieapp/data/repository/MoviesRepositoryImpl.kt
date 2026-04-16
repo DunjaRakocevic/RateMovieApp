@@ -199,6 +199,18 @@ class MoviesRepositoryImpl(
     }
 }
 
+private val ITEM_ARRAY_KEYS = listOf(
+    "results",
+    "items",
+    "data",
+    "movies",
+    "cast",
+    "images",
+    "videos",
+    "genres",
+    "backdrops"
+)
+
 private fun JsonElement.asObject(): JsonObject =
     this as? JsonObject ?: JsonObject(emptyMap())
 
@@ -206,17 +218,7 @@ private fun JsonElement.asItemArray(): List<JsonObject> {
     return when (this) {
         is JsonArray -> this.mapNotNull { it as? JsonObject }
         is JsonObject -> {
-            val items = listOf(
-                "results",
-                "items",
-                "data",
-                "movies",
-                "cast",
-                "images",
-                "videos",
-                "genres",
-                "backdrops"
-            ).firstNotNullOfOrNull { key -> this[key] }
+            val items = ITEM_ARRAY_KEYS.firstNotNullOfOrNull { key -> this[key] }
             (items as? JsonArray)?.mapNotNull { it as? JsonObject } ?: emptyList()
         }
         else -> emptyList()
