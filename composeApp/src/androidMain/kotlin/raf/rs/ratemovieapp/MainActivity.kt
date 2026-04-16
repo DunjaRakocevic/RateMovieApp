@@ -29,12 +29,15 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import raf.rs.ratemovieapp.navigation.AppNavGraph
+import raf.rs.ratemovieapp.ui.theme.AppTheme
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-            AppNavGraph()
+            AppTheme {
+                AppNavGraph()
+            }
         }
     }
 }

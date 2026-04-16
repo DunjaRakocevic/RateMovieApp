@@ -8,6 +8,8 @@ plugins {
     alias(libs.plugins.composeCompiler)
     alias(libs.plugins.composeHotReload)
     alias(libs.plugins.kotlinParcelize)
+    alias(libs.plugins.kotlinSerialization)
+    alias(libs.plugins.ksp)
 }
 
 kotlin {
@@ -39,6 +41,13 @@ kotlin {
             implementation(libs.koin.androidx.compose)
             implementation(libs.androidx.lifecycle.viewmodel.ktx)
             implementation(libs.androidx.lifecycle.runtime.ktx)
+            implementation(libs.kotlinx.serialization.json)
+            implementation(libs.ktor.client.core)
+            implementation(libs.ktor.client.okhttp)
+            implementation(libs.ktor.client.content.negotiation)
+            implementation(libs.ktor.serialization.kotlinx.json)
+            implementation(libs.ktorfit.lib)
+            implementation(libs.coil.compose)
         }
         commonMain.dependencies {
             implementation(libs.compose.runtime)
@@ -58,6 +67,10 @@ kotlin {
             implementation(libs.kotlinx.coroutinesSwing)
         }
     }
+}
+
+dependencies {
+    add("kspAndroid", libs.ktorfit.ksp)
 }
 
 android {

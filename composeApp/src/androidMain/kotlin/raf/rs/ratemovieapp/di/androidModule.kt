@@ -7,7 +7,7 @@ import raf.rs.ratemovieapp.presentation.moviedetails.MovieDetailsViewModel
 import raf.rs.ratemovieapp.presentation.movieslist.MoviesListViewModel
 
 val androidModule = module {
-    viewModel { MoviesListViewModel(get()) }
-    viewModel { FilterViewModel(get()) }
-    viewModel { MovieDetailsViewModel(get()) }
+    viewModel { MoviesListViewModel(get(), get()) }
+    viewModel { FilterViewModel(get(), get()) }
+    viewModel { MovieDetailsViewModel(get(), get()) }
 }
