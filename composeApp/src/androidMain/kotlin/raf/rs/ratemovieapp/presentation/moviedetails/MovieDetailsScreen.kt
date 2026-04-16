@@ -127,8 +127,8 @@ fun MovieDetailsScreen(
                                 contentAlignment = Alignment.Center
                             ) {
                                 Text(
-                                    "▶",
-                                    style = MaterialTheme.typography.titleLarge,
+                                    "Play",
+                                    style = MaterialTheme.typography.labelLarge,
                                     modifier = Modifier.semantics { contentDescription = "Play trailer" }
                                 )
                             }

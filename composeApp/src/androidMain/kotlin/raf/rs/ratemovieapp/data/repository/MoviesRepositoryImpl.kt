@@ -160,8 +160,6 @@ class MoviesRepositoryImpl(
     }
 
     private suspend fun ensureImageBuilder(): ImageUrlBuilder {
-        imageBuilder?.let { return it }
-
         return configMutex.withLock {
             imageBuilder?.let { return@withLock it }
 
