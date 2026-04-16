@@ -1,6 +1,7 @@
 package raf.rs.ratemovieapp.presentation.moviedetails
 
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.async
@@ -15,7 +16,8 @@ import raf.rs.ratemovieapp.presentation.moviedetails.MovieDetailsContract.State
 
 
 class MovieDetailsViewModel(
-    private val repo: MoviesRepository
+    private val repo: MoviesRepository,
+    private val savedStateHandle: SavedStateHandle
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(State())
@@ -24,12 +26,13 @@ class MovieDetailsViewModel(
     private val _effects = Channel<Effect>(Channel.BUFFERED)
     val effects: Flow<Effect> = _effects.receiveAsFlow()
 
-    private var movieId: Int? = null
+    private var movieId: Int? = savedStateHandle.get<Int>(KEY_MOVIE_ID)
     private var loadJob: Job? = null
 
     fun setMovieId(id: Int) {
         if (movieId == id) return
         movieId = id
+        savedStateHandle[KEY_MOVIE_ID] = id
         load()
     }
 
@@ -81,5 +84,9 @@ class MovieDetailsViewModel(
             return
         }
         viewModelScope.launch { _effects.send(Effect.OpenYoutube(trailer.youtubeUrl)) }
+    }
+
+    companion object {
+        private const val KEY_MOVIE_ID = "details_movie_id"
     }
 }

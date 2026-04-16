@@ -20,6 +20,8 @@ object FilterContract {
         data object ScreenStarted : Event()
         data class QueryChanged(val value: String) : Event()
         data class GenreSelected(val genreId: Int?) : Event()
+        data class MinYearChanged(val value: String) : Event()
+        data class MaxYearChanged(val value: String) : Event()
         data class MinRatingChanged(val value: Float) : Event()
         data object ClearAll : Event()
         data object Apply : Event()

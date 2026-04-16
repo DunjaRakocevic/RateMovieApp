@@ -15,13 +15,15 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FilterChip
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Slider
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.AssistChip
-import androidx.compose.material3.IconButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -103,14 +105,15 @@ fun FilterScreen(
                     Text("Genre (single)", style = MaterialTheme.typography.titleMedium)
                     Spacer(Modifier.height(8.dp))
 
-                    // Bez FlowRow-a (da izbegnemo dodatne zavisnosti/eksperimentalno)
                     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                        AssistChip(
+                        FilterChip(
+                            selected = s.draft.genreId == null,
                             onClick = { onEvent(Event.GenreSelected(null)) },
                             label = { Text("All") }
                         )
                         s.genres.forEach { g ->
-                            AssistChip(
+                            FilterChip(
+                                selected = s.draft.genreId == g.id,
                                 onClick = { onEvent(Event.GenreSelected(g.id)) },
                                 label = { Text(g.name) }
                             )
@@ -118,14 +121,27 @@ fun FilterScreen(
                     }
 
                     Spacer(Modifier.height(16.dp))
+                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        OutlinedTextField(
+                            value = s.draft.minYear?.toString() ?: "",
+                            onValueChange = { onEvent(Event.MinYearChanged(it)) },
+                            label = { Text("Min year") },
+                            modifier = Modifier.weight(1f)
+                        )
+                        OutlinedTextField(
+                            value = s.draft.maxYear?.toString() ?: "",
+                            onValueChange = { onEvent(Event.MaxYearChanged(it)) },
+                            label = { Text("Max year") },
+                            modifier = Modifier.weight(1f)
+                        )
+                    }
 
+                    Spacer(Modifier.height(16.dp))
                     Text(
                         "Minimum rating: ${String.format("%.1f", s.draft.minRating ?: 0f)}",
                         style = MaterialTheme.typography.titleMedium
                     )
-
-                    // Slider je ok (ako ti je importovao)
-                    androidx.compose.material3.Slider(
+                    Slider(
                         value = s.draft.minRating ?: 0f,
                         onValueChange = { onEvent(Event.MinRatingChanged(it)) },
                         valueRange = 0f..10f
@@ -133,7 +149,7 @@ fun FilterScreen(
 
                     Spacer(Modifier.height(16.dp))
                     Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        Button(onClick = { onEvent(Event.ClearAll) }) { Text("Clear All") }
+                        OutlinedButton(onClick = { onEvent(Event.ClearAll) }) { Text("Clear All") }
                         Button(onClick = { onEvent(Event.Apply) }) { Text("Apply Filters") }
                     }
                 }

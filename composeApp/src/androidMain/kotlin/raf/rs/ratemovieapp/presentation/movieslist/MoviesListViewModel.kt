@@ -1,12 +1,14 @@
 package raf.rs.ratemovieapp.presentation.movieslist
 
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import raf.rs.ratemovieapp.data.repository.MoviesRepository
+import raf.rs.ratemovieapp.presentation.filter.FilterParams
 import raf.rs.ratemovieapp.presentation.movieslist.MoviesListContract.Effect
 import raf.rs.ratemovieapp.presentation.movieslist.MoviesListContract.Event
 import raf.rs.ratemovieapp.presentation.movieslist.MoviesListContract.SortOption
@@ -14,10 +16,23 @@ import raf.rs.ratemovieapp.presentation.movieslist.MoviesListContract.State
 import raf.rs.ratemovieapp.presentation.movieslist.MoviesListContract.Status
 
 class MoviesListViewModel(
-    private val repo: MoviesRepository
+    private val repo: MoviesRepository,
+    private val savedStateHandle: SavedStateHandle
 ) : ViewModel() {
 
-    private val _state = MutableStateFlow(State())
+    private val initialSort = savedStateHandle.get<String>(KEY_SORT)
+        ?.let { saved -> SortOption.entries.firstOrNull { it.name == saved } }
+        ?: SortOption.Rating
+    private val initialFilters = savedStateHandle.get<FilterParams>(KEY_FILTERS)
+        ?: FilterParams()
+
+    private val _state = MutableStateFlow(
+        State(
+            sort = initialSort,
+            appliedFilters = initialFilters,
+            activeFiltersCount = initialFilters.appliedCount()
+        )
+    )
     val state: StateFlow<State> = _state.asStateFlow()
 
     private val _effects = Channel<Effect>(Channel.BUFFERED)
@@ -38,6 +53,7 @@ class MoviesListViewModel(
             Event.SortPillClicked -> {
                 val next = nextSort(_state.value.sort)
                 _state.update { it.copy(sort = next) }
+                savedStateHandle[KEY_SORT] = next.name
                 loadMovies()
             }
             Event.FilterClicked -> {
@@ -51,6 +67,7 @@ class MoviesListViewModel(
                         activeFiltersCount = count
                     )
                 }
+                savedStateHandle[KEY_FILTERS] = event.params
                 loadMovies()
             }
             is Event.MovieClicked -> {
@@ -103,5 +120,10 @@ class MoviesListViewModel(
                 }
             )
         }
+    }
+
+    companion object {
+        private const val KEY_SORT = "movies_sort"
+        private const val KEY_FILTERS = "movies_filters"
     }
 }
