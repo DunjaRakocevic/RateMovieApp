@@ -2,7 +2,7 @@ package raf.rs.ratemovieapp.data.model
 
 
 data class MovieDetails(
-    val id: Int,
+    val id: String,
     val title: String,
     val overview: String,
     val year: Int,

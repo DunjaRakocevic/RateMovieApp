@@ -61,7 +61,7 @@ fun MoviesListScreen(
     effects: Flow<Effect>,
     onEvent: (Event) -> Unit,
     onNavigateToFilters: () -> Unit,
-    onNavigateToDetails: (Int) -> Unit
+    onNavigateToDetails: (String) -> Unit
 ) {
     val s by state.collectAsState()
 
@@ -232,5 +232,4 @@ private fun MovieListItem(movie: Movie, onClick: () -> Unit) {
         }
     }
 }
-
 

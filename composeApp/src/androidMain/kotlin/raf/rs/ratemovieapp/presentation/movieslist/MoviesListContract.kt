@@ -34,12 +34,12 @@ object MoviesListContract {
         data object SortPillClicked : Event()
         data object FilterClicked : Event()
         data class FiltersApplied(val params: FilterParams) : Event()
-        data class MovieClicked(val id: Int) : Event()
+        data class MovieClicked(val id: String) : Event()
     }
 
     sealed class Effect {
         data object NavigateToFilters : Effect()
-        data class NavigateToDetails(val id: Int) : Effect()
+        data class NavigateToDetails(val id: String) : Effect()
         data class ShowMessage(val message: String) : Effect()
     }
 }

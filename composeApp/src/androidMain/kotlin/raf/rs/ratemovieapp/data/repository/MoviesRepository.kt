@@ -13,8 +13,8 @@ interface MoviesRepository {
 
     suspend fun getGenres(): Result<List<Genre>>
 
-    suspend fun getMovieDetails(id: Int): Result<MovieDetails>
-    suspend fun getMovieCast(id: Int, pageSize: Int): Result<List<CastMember>>
-    suspend fun getMovieBackdrops(id: Int): Result<List<MovieImage>>
-    suspend fun getMovieTrailers(id: Int): Result<List<MovieVideo>>
+    suspend fun getMovieDetails(id: String): Result<MovieDetails>
+    suspend fun getMovieCast(id: String, pageSize: Int): Result<List<CastMember>>
+    suspend fun getMovieBackdrops(id: String): Result<List<MovieImage>>
+    suspend fun getMovieTrailers(id: String): Result<List<MovieVideo>>
 }

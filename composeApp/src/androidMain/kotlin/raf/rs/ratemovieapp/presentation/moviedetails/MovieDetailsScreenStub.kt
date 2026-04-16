@@ -11,7 +11,7 @@ import androidx.compose.ui.Modifier
 
 @Composable
 fun MovieDetailsScreenStub(
-    movieId: Int,
+    movieId: String,
     onBack: () -> Unit
 ) {
     Column(

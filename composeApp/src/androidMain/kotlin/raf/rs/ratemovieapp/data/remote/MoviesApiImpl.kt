@@ -37,22 +37,22 @@ class MoviesApiImpl(
     override suspend fun getConfig(): String =
         client.get("${BASE_URL}config").bodyAsText()
 
-    override suspend fun getMovieDetails(id: Int): String =
+    override suspend fun getMovieDetails(id: String): String =
         client.get("${BASE_URL}movies/$id").bodyAsText()
 
-    override suspend fun getMovieCast(id: Int, pageSize: Int): String {
+    override suspend fun getMovieCast(id: String, pageSize: Int): String {
         return client.get("${BASE_URL}movies/$id/cast") {
             parameter("page_size", pageSize)
         }.bodyAsText()
     }
 
-    override suspend fun getMovieImages(id: Int, type: String): String {
+    override suspend fun getMovieImages(id: String, type: String): String {
         return client.get("${BASE_URL}movies/$id/images") {
             parameter("type", type)
         }.bodyAsText()
     }
 
-    override suspend fun getMovieVideos(id: Int, type: String): String {
+    override suspend fun getMovieVideos(id: String, type: String): String {
         return client.get("${BASE_URL}movies/$id/videos") {
             parameter("type", type)
         }.bodyAsText()

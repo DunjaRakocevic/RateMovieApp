@@ -49,7 +49,10 @@ class MoviesRepositoryImpl(
         ))
 
         response.asItemArray().mapNotNull { movieObj ->
-            val id = movieObj.int("id") ?: return@mapNotNull null
+            val id = movieObj.string("imdbId")
+                ?: movieObj.string("imdb_id")
+                ?: movieObj.string("id")
+                ?: return@mapNotNull null
             Movie(
                 id = id,
                 title = movieObj.string("title") ?: "Unknown",
@@ -58,10 +61,15 @@ class MoviesRepositoryImpl(
                     ?: movieObj.int("runtime")
                     ?: movieObj.int("duration")
                     ?: 0,
-                imdbRating = movieObj.float("imdb_rating") ?: 0f,
-                imdbVotes = movieObj.int("imdb_votes") ?: 0,
+                imdbRating = movieObj.float("imdbRating")
+                    ?: movieObj.float("imdb_rating")
+                    ?: 0f,
+                imdbVotes = movieObj.int("imdbVotes")
+                    ?: movieObj.int("imdb_votes")
+                    ?: 0,
                 posterUrl = toPosterUrl(
-                    movieObj.string("poster_path")
+                    movieObj.string("posterPath")
+                        ?: movieObj.string("poster_path")
                         ?: movieObj.string("poster_file_path")
                         ?: movieObj.string("poster")
                         ?: movieObj.string("poster_url")
@@ -78,46 +86,64 @@ class MoviesRepositoryImpl(
         }
     }
 
-    override suspend fun getMovieDetails(id: Int): Result<MovieDetails> = runCatching {
+    override suspend fun getMovieDetails(id: String): Result<MovieDetails> = runCatching {
         ensureImageBuilder()
         val obj = json.parseToJsonElement(api.getMovieDetails(id)).asObject()
         MovieDetails(
-            id = obj.int("id") ?: id,
+            id = obj.string("imdbId")
+                ?: obj.string("imdb_id")
+                ?: obj.string("id")
+                ?: id,
             title = obj.string("title") ?: "Unknown",
             overview = obj.string("overview") ?: "",
             year = obj.int("year") ?: obj.int("release_year") ?: 0,
             runtimeMinutes = obj.int("runtime_minutes") ?: obj.int("runtime") ?: 0,
-            imdbRating = obj.float("imdb_rating") ?: 0f,
-            imdbVotes = obj.int("imdb_votes") ?: 0,
-            tmdbRating = obj.float("tmdb_rating") ?: obj.float("vote_average") ?: 0f,
+            imdbRating = obj.float("imdbRating")
+                ?: obj.float("imdb_rating")
+                ?: 0f,
+            imdbVotes = obj.int("imdbVotes")
+                ?: obj.int("imdb_votes")
+                ?: 0,
+            tmdbRating = obj.float("tmdbRating")
+                ?: obj.float("tmdb_rating")
+                ?: obj.float("vote_average")
+                ?: 0f,
             genres = obj.genres(),
             posterUrl = toPosterUrl(
-                obj.string("poster_path")
+                obj.string("posterPath")
+                    ?: obj.string("poster_path")
                     ?: obj.string("poster_file_path")
                     ?: obj.string("poster")
                     ?: obj.string("poster_url")
             ),
             backdropUrl = toBackdropUrl(
-                obj.string("backdrop_path")
+                obj.string("backdropPath")
+                    ?: obj.string("backdrop_path")
                     ?: obj.string("backdrop_file_path")
                     ?: obj.string("backdrop")
                     ?: obj.string("backdrop_url")
             ),
             budget = obj.long("budget") ?: 0L,
             revenue = obj.long("revenue") ?: 0L,
-            language = obj.string("language") ?: obj.string("original_language") ?: "",
+            language = obj.string("languageCode")
+                ?: obj.string("language")
+                ?: obj.string("original_language")
+                ?: "",
             popularity = obj.float("popularity") ?: 0f
         )
     }
 
-    override suspend fun getMovieCast(id: Int, pageSize: Int): Result<List<CastMember>> = runCatching {
+    override suspend fun getMovieCast(id: String, pageSize: Int): Result<List<CastMember>> = runCatching {
         ensureImageBuilder()
         json.parseToJsonElement(api.getMovieCast(id, pageSize)).asItemArray().mapIndexed { index, castObj ->
             CastMember(
-                id = castObj.int("id") ?: index,
+                id = castObj.int("id")
+                    ?: castObj.string("imdbId")?.digitsAsIntOrNull()
+                    ?: index,
                 name = castObj.string("name") ?: castObj.string("character") ?: "Unknown",
                 profileUrl = toPosterUrl(
-                    castObj.string("profile_path")
+                    castObj.string("profilePath")
+                        ?: castObj.string("profile_path")
                         ?: castObj.string("profile")
                         ?: castObj.string("profile_url")
                 )
@@ -125,12 +151,15 @@ class MoviesRepositoryImpl(
         }
     }
 
-    override suspend fun getMovieBackdrops(id: Int): Result<List<MovieImage>> = runCatching {
+    override suspend fun getMovieBackdrops(id: String): Result<List<MovieImage>> = runCatching {
         ensureImageBuilder()
-        json.parseToJsonElement(api.getMovieImages(id, type = "backdrop")).asItemArray().map { imageObj ->
+        val response = json.parseToJsonElement(api.getMovieImages(id, type = "backdrop"))
+        val images = response.asBackdropArray()
+        images.map { imageObj ->
             MovieImage(
                 fileUrl = toBackdropUrl(
-                    imageObj.string("file_path")
+                    imageObj.string("filePath")
+                        ?: imageObj.string("file_path")
                         ?: imageObj.string("path")
                         ?: imageObj.string("url")
                 )
@@ -138,7 +167,7 @@ class MoviesRepositoryImpl(
         }
     }
 
-    override suspend fun getMovieTrailers(id: Int): Result<List<MovieVideo>> = runCatching {
+    override suspend fun getMovieTrailers(id: String): Result<List<MovieVideo>> = runCatching {
         json.parseToJsonElement(api.getMovieVideos(id, type = "Trailer")).asItemArray().mapNotNull { videoObj ->
             val key = videoObj.string("youtube_key")
                 ?: videoObj.string("key")
@@ -162,17 +191,21 @@ class MoviesRepositoryImpl(
         return configMutex.withLock {
             imageBuilder?.let { return@withLock it }
 
-            val configJson = json.parseToJsonElement(api.getConfig()).asObject()
+            val configElement = json.parseToJsonElement(api.getConfig())
+            val configJson = configElement.asObject()
             val imageBaseUrl = configJson.string("image_base_url")
+                ?: configElement.configValue("image_base_url")
                 ?: configJson.obj("images")?.string("secure_base_url")
                 ?: configJson.obj("images")?.string("base_url")
                 ?: ""
 
             val posterSize = configJson.firstStringFromArray("poster_sizes")
+                ?: configElement.firstCommaSeparatedValue("poster_sizes")
                 ?: configJson.obj("images")?.firstStringFromArray("poster_sizes")
                 ?: "w342"
 
             val backdropSize = configJson.firstStringFromArray("backdrop_sizes")
+                ?: configElement.firstCommaSeparatedValue("backdrop_sizes")
                 ?: configJson.obj("images")?.firstStringFromArray("backdrop_sizes")
                 ?: "w780"
 
@@ -201,6 +234,29 @@ class MoviesRepositoryImpl(
 
 private fun JsonElement.asObject(): JsonObject =
     this as? JsonObject ?: JsonObject(emptyMap())
+
+private fun JsonElement.configValue(key: String): String? {
+    val entries = this as? JsonArray ?: return null
+    return entries.firstNotNullOfOrNull { entry ->
+        val obj = entry as? JsonObject ?: return@firstNotNullOfOrNull null
+        if (obj.string("key") != key) return@firstNotNullOfOrNull null
+        obj.string("value")
+    }
+}
+
+private fun JsonElement.firstCommaSeparatedValue(key: String): String? =
+    configValue(key)
+        ?.split(",")
+        ?.map { it.trim() }
+        ?.firstOrNull { it.isNotBlank() }
+
+private fun JsonElement.asBackdropArray(): List<JsonObject> = when (this) {
+    is JsonObject -> {
+        val backdrops = this["backdrops"] as? JsonArray ?: return emptyList()
+        backdrops.mapNotNull { it as? JsonObject }
+    }
+    else -> asItemArray()
+}
 
 private fun JsonElement.asItemArray(): List<JsonObject> {
     return when (this) {
@@ -256,4 +312,10 @@ private fun JsonObject.genres(): List<Genre> {
         }
         else -> emptyList()
     }
+}
+
+private fun String.digitsAsIntOrNull(): Int? {
+    val digits = filter { it.isDigit() }
+    if (digits.isBlank()) return null
+    return digits.toIntOrNull()
 }

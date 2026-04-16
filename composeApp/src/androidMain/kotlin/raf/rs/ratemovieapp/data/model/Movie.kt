@@ -1,7 +1,7 @@
 package raf.rs.ratemovieapp.data.model
 
 data class Movie(
-    val id: Int,
+    val id: String,
     val title: String,
     val year: Int,
     val runtimeMinutes: Int,
@@ -10,4 +10,3 @@ data class Movie(
     val posterUrl: String?,
     val genres: List<Genre>
 )
-

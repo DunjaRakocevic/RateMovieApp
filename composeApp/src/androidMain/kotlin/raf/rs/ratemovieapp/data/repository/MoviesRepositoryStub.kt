@@ -26,7 +26,7 @@ class MoviesRepositoryStub : MoviesRepository {
         val base = (1..60).map { id ->
             val movieGenres = genres.shuffled().take((id % 3) + 1)
             Movie(
-                id = id,
+                id = "tt$id",
                 title = "Movie $id",
                 year = 1995 + (id % 30),
                 runtimeMinutes = 80 + (id % 60),
@@ -63,41 +63,42 @@ class MoviesRepositoryStub : MoviesRepository {
         return Result.success(genres)
     }
 
-    override suspend fun getMovieDetails(id: Int): Result<MovieDetails> {
+    override suspend fun getMovieDetails(id: String): Result<MovieDetails> {
         delay(250)
+        val numericId = id.filter { it.isDigit() }.toIntOrNull() ?: 1
         val movieGenres = genres.shuffled().take(3)
         return Result.success(
             MovieDetails(
                 id = id,
                 title = "Movie $id",
                 overview = "Overview for Movie $id. This is a stub overview used to test UI states.",
-                year = 2005 + (id % 15),
-                runtimeMinutes = 95 + (id % 45),
-                imdbRating = (6.5 + (id % 30) / 10.0).toFloat().coerceAtMost(10f),
-                imdbVotes = 100_000 + id * 777,
+                year = 2005 + (numericId % 15),
+                runtimeMinutes = 95 + (numericId % 45),
+                imdbRating = (6.5 + (numericId % 30) / 10.0).toFloat().coerceAtMost(10f),
+                imdbVotes = 100_000 + numericId * 777,
                 tmdbRating = (6.0 + Random.nextDouble(0.0, 2.5)).toFloat().coerceAtMost(10f),
                 genres = movieGenres,
                 posterUrl = null,
                 backdropUrl = null,
-                budget = 10_000_000L + id * 1234L,
-                revenue = 50_000_000L + id * 5678L,
+                budget = 10_000_000L + numericId * 1234L,
+                revenue = 50_000_000L + numericId * 5678L,
                 language = "en",
-                popularity = 100f + id
+                popularity = 100f + numericId
             )
         )
     }
 
-    override suspend fun getMovieCast(id: Int, pageSize: Int): Result<List<CastMember>> {
+    override suspend fun getMovieCast(id: String, pageSize: Int): Result<List<CastMember>> {
         delay(200)
         return Result.success((1..pageSize).map { CastMember(it, "Actor $it", profileUrl = null) })
     }
 
-    override suspend fun getMovieBackdrops(id: Int): Result<List<MovieImage>> {
+    override suspend fun getMovieBackdrops(id: String): Result<List<MovieImage>> {
         delay(150)
         return Result.success(listOf(MovieImage(null), MovieImage(null), MovieImage(null)))
     }
 
-    override suspend fun getMovieTrailers(id: Int): Result<List<MovieVideo>> {
+    override suspend fun getMovieTrailers(id: String): Result<List<MovieVideo>> {
         delay(150)
         return Result.success(
             listOf(
