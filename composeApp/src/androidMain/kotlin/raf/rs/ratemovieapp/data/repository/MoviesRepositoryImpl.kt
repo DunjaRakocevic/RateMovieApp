@@ -138,7 +138,7 @@ class MoviesRepositoryImpl(
         json.parseToJsonElement(api.getMovieCast(id, pageSize)).asItemArray().mapIndexed { index, castObj ->
             CastMember(
                 id = castObj.int("id")
-                    ?: castObj.string("imdbId")?.hashCode()
+                    ?: castObj.string("imdbId")?.digitsAsIntOrNull()
                     ?: index,
                 name = castObj.string("name") ?: castObj.string("character") ?: "Unknown",
                 profileUrl = toPosterUrl(
@@ -299,10 +299,20 @@ private fun JsonObject.genres(): List<Genre> {
                     val id = item.int("id") ?: return@mapNotNull null
                     Genre(id, item.string("name") ?: "Unknown")
                 }
-                is JsonPrimitive -> null
+                is JsonPrimitive -> {
+                    null
+                }
                 else -> null
             }
         }
         else -> emptyList()
     }
+}
+
+private fun String.digitsAsIntOrNull(): Int? {
+    val digits = filter { it.isDigit() }
+    if (digits.isBlank()) return null
+    return digits.toLongOrNull()
+        ?.coerceAtMost(Int.MAX_VALUE.toLong())
+        ?.toInt()
 }
