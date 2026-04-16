@@ -13,17 +13,16 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.AssistChip
-import androidx.compose.material3.Badge
-import androidx.compose.material3.BadgedBox
+import androidx.compose.material3.AssistChipDefaults
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.IconButton
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -34,20 +33,28 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.StateFlow
 import raf.rs.ratemovieapp.data.model.Movie
+import raf.rs.ratemovieapp.presentation.components.formatVotes
 import raf.rs.ratemovieapp.presentation.movieslist.MoviesListContract.Effect
 import raf.rs.ratemovieapp.presentation.movieslist.MoviesListContract.Event
 import raf.rs.ratemovieapp.presentation.movieslist.MoviesListContract.State
 import raf.rs.ratemovieapp.presentation.movieslist.MoviesListContract.Status
 
+private val FilterRed = Color(0xFFE11D48)
+private val StarGold = Color(0xFFFFCE1F)
+
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MoviesListScreen(
     state: StateFlow<State>,
@@ -73,19 +80,26 @@ fun MoviesListScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Movies") },
-                actions = {
-                    BadgedBox(
-                        badge = {
-                            if (s.activeFiltersCount > 0) {
-                                Badge { Text(s.activeFiltersCount.toString()) }
-                            }
-                        }
-                    ) {
-                        IconButton(onClick = { onEvent(Event.FilterClicked) }) {
-                            Text(if (s.activeFiltersCount > 0) "Filter (${s.activeFiltersCount})" else "Filter")
-                        }
+                title = {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Text("🎬", fontSize = 20.sp)
+                        Spacer(Modifier.width(8.dp))
+                        Text("Premiere", fontWeight = FontWeight.Bold)
                     }
+                },
+                actions = {
+                    val filterLabel = if (s.activeFiltersCount > 0)
+                        "⊞ Filter (${s.activeFiltersCount})" else "⊞ Filter"
+                    Button(
+                        onClick = { onEvent(Event.FilterClicked) },
+                        colors = ButtonDefaults.buttonColors(containerColor = FilterRed),
+                        shape = RoundedCornerShape(50.dp),
+                        contentPadding = PaddingValues(horizontal = 16.dp, vertical = 0.dp),
+                        modifier = Modifier.height(36.dp)
+                    ) {
+                        Text(filterLabel, color = Color.White, fontWeight = FontWeight.SemiBold)
+                    }
+                    Spacer(Modifier.width(8.dp))
                 }
             )
         }
@@ -104,7 +118,7 @@ fun MoviesListScreen(
             ) {
                 AssistChip(
                     onClick = { onEvent(Event.SortPillClicked) },
-                    label = { Text("Sort: ${s.sort.label}") }
+                    label = { Text("Sort: ${s.sort.label} ↓ ▼") }
                 )
                 Text(s.moviesCountText, style = MaterialTheme.typography.bodyMedium)
             }
@@ -159,7 +173,7 @@ private fun MovieListItem(movie: Movie, onClick: () -> Unit) {
             model = movie.posterUrl,
             contentDescription = movie.title,
             modifier = Modifier
-                .width(80.dp)
+                .width(85.dp)
                 .fillMaxHeight()
                 .background(
                     color = MaterialTheme.colorScheme.surface,
@@ -174,23 +188,49 @@ private fun MovieListItem(movie: Movie, onClick: () -> Unit) {
             Text(
                 movie.title,
                 style = MaterialTheme.typography.titleMedium,
-                maxLines = 1,
+                fontWeight = FontWeight.Bold,
+                maxLines = 2,
                 overflow = TextOverflow.Ellipsis
             )
-            Text("${movie.year} • ${movie.runtimeMinutes} min")
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Text("★")
+            Text(
+                movie.year.toString(),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.semantics {
+                    contentDescription = "IMDB rating ${movie.imdbRating} with ${movie.imdbVotes} votes"
+                }
+            ) {
+                Text("★", color = StarGold, fontSize = 14.sp)
+                Spacer(Modifier.width(4.dp))
+                Text(
+                    movie.imdbRating.toString(),
+                    fontWeight = FontWeight.Bold,
+                    style = MaterialTheme.typography.bodyMedium
+                )
                 Spacer(Modifier.width(6.dp))
                 Text(
-                    "${movie.imdbRating} (${movie.imdbVotes})",
-                    modifier = Modifier.semantics { contentDescription = "IMDB rating ${movie.imdbRating} with ${movie.imdbVotes} votes" }
+                    "${formatVotes(movie.imdbVotes)} votes",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
-            Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+            Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
                 movie.genres.take(3).forEach { genre ->
-                    AssistChip(onClick = {}, label = { Text(genre.name) })
+                    AssistChip(
+                        onClick = {},
+                        label = { Text(genre.name, style = MaterialTheme.typography.labelSmall) },
+                        shape = RoundedCornerShape(50.dp),
+                        colors = AssistChipDefaults.assistChipColors(
+                            containerColor = MaterialTheme.colorScheme.surface
+                        )
+                    )
                 }
             }
         }
     }
 }
+
+
