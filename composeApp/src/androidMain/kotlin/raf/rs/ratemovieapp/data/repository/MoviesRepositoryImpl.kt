@@ -206,15 +206,17 @@ private fun JsonElement.asItemArray(): List<JsonObject> {
     return when (this) {
         is JsonArray -> this.mapNotNull { it as? JsonObject }
         is JsonObject -> {
-            val items = this["results"]
-                ?: this["items"]
-                ?: this["data"]
-                ?: this["movies"]
-                ?: this["cast"]
-                ?: this["images"]
-                ?: this["videos"]
-                ?: this["genres"]
-                ?: this["backdrops"]
+            val items = listOf(
+                "results",
+                "items",
+                "data",
+                "movies",
+                "cast",
+                "images",
+                "videos",
+                "genres",
+                "backdrops"
+            ).firstNotNullOfOrNull { key -> this[key] }
             (items as? JsonArray)?.mapNotNull { it as? JsonObject } ?: emptyList()
         }
         else -> emptyList()
