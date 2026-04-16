@@ -31,7 +31,7 @@ fun RatingRow(
     }
 }
 
-private fun formatVotes(votes: Int): String {
+internal fun formatVotes(votes: Int): String {
     return when {
         votes >= 1_000_000 -> String.format("%.1fM", votes / 1_000_000f)
         votes >= 1_000 -> String.format("%.0fK", votes / 1_000f)

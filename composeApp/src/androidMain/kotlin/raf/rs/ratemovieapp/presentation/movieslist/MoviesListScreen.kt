@@ -45,6 +45,7 @@ import coil.compose.AsyncImage
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.StateFlow
 import raf.rs.ratemovieapp.data.model.Movie
+import raf.rs.ratemovieapp.presentation.components.formatVotes
 import raf.rs.ratemovieapp.presentation.movieslist.MoviesListContract.Effect
 import raf.rs.ratemovieapp.presentation.movieslist.MoviesListContract.Event
 import raf.rs.ratemovieapp.presentation.movieslist.MoviesListContract.State
@@ -232,8 +233,4 @@ private fun MovieListItem(movie: Movie, onClick: () -> Unit) {
     }
 }
 
-private fun formatVotes(votes: Int): String = when {
-    votes >= 1_000_000 -> String.format("%.1fM", votes / 1_000_000f)
-    votes >= 1_000 -> String.format("%.0fK", votes / 1_000f)
-    else -> votes.toString()
-}
+

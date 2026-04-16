@@ -41,6 +41,7 @@ import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.StateFlow
+import raf.rs.ratemovieapp.presentation.components.formatVotes
 import raf.rs.ratemovieapp.presentation.moviedetails.MovieDetailsContract.Effect
 import raf.rs.ratemovieapp.presentation.moviedetails.MovieDetailsContract.Event
 import raf.rs.ratemovieapp.presentation.moviedetails.MovieDetailsContract.State
@@ -336,12 +337,6 @@ private fun InfoBadge(label: String, value: String) {
         Spacer(Modifier.height(2.dp))
         Text(value, style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.Bold)
     }
-}
-
-private fun formatVotes(votes: Int): String = when {
-    votes >= 1_000_000 -> String.format("%.1fM", votes / 1_000_000f)
-    votes >= 1_000 -> String.format("%.0fK", votes / 1_000f)
-    else -> votes.toString()
 }
 
 private fun formatCurrency(amount: Long): String = when {
