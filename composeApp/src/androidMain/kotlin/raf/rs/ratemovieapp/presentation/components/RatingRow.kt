@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.width
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.ui.Modifier
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.unit.dp
 import raf.rs.ratemovieapp.ui.theme.C_OnDarkMuted
@@ -31,7 +32,7 @@ fun RatingRow(
     }
 }
 
-internal fun formatVotes(votes: Int): String {
+fun formatVotes(votes: Int): String {
     return when {
         votes >= 1_000_000 -> String.format("%.1fM", votes / 1_000_000f)
         votes >= 1_000 -> String.format("%.0fK", votes / 1_000f)

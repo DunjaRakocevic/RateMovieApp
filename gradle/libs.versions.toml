@@ -21,7 +21,7 @@ navigationCompose = "2.8.0"
 kotlinx-serialization = "1.7.3"
 ktor = "2.3.12"
 ktorfit = "1.11.0"
-ksp = "2.3.20-2.0.3"
+ksp = "2.3.6"
 coil = "2.7.0"
 
 koin = "3.5.6"
