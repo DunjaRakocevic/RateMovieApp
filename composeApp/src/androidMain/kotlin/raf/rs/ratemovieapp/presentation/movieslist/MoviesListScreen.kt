@@ -35,6 +35,8 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
@@ -177,7 +179,7 @@ private fun MovieListItem(movie: Movie, onClick: () -> Unit) {
             )
             Text("${movie.year} • ${movie.runtimeMinutes} min")
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Text("★")
+                Text("★", modifier = Modifier.semantics { contentDescription = "Rating star" })
                 Spacer(Modifier.width(6.dp))
                 Text("${movie.imdbRating} (${movie.imdbVotes})")
             }

@@ -10,6 +10,7 @@ import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.contentOrNull
 import kotlinx.serialization.json.floatOrNull
 import kotlinx.serialization.json.intOrNull
+import kotlinx.serialization.json.longOrNull
 import raf.rs.ratemovieapp.data.model.CastMember
 import raf.rs.ratemovieapp.data.model.Genre
 import raf.rs.ratemovieapp.data.model.Movie
@@ -229,8 +230,7 @@ private fun JsonObject.int(name: String): Int? =
     (this[name] as? JsonPrimitive)?.intOrNull
 
 private fun JsonObject.long(name: String): Long? {
-    val value = (this[name] as? JsonPrimitive)?.contentOrNull ?: return null
-    return value.toLongOrNull()
+    return (this[name] as? JsonPrimitive)?.longOrNull
 }
 
 private fun JsonObject.float(name: String): Float? =

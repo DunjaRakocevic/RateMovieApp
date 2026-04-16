@@ -37,6 +37,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalUriHandler
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
@@ -124,7 +126,11 @@ fun MovieDetailsScreen(
                                     .clickable { onEvent(Event.PlayTrailerClicked) },
                                 contentAlignment = Alignment.Center
                             ) {
-                                Text("▶", style = MaterialTheme.typography.titleLarge)
+                                Text(
+                                    "▶",
+                                    style = MaterialTheme.typography.titleLarge,
+                                    modifier = Modifier.semantics { contentDescription = "Play trailer" }
+                                )
                             }
                             AsyncImage(
                                 model = d.posterUrl,
@@ -148,7 +154,7 @@ fun MovieDetailsScreen(
 
                             Row(horizontalArrangement = Arrangement.spacedBy(16.dp), verticalAlignment = Alignment.CenterVertically) {
                                 Row(verticalAlignment = Alignment.CenterVertically) {
-                                    Text("★")
+                                    Text("★", modifier = Modifier.semantics { contentDescription = "Rating star" })
                                     Spacer(Modifier.width(4.dp))
                                     Text("${d.imdbRating} (${d.imdbVotes})")
                                 }
