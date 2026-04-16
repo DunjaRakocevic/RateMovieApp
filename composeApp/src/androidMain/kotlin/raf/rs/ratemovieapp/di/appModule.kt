@@ -2,7 +2,7 @@ package raf.rs.ratemovieapp.di
 
 //import de.jensklingenberg.ktorfit.Ktorfit
 import io.ktor.client.HttpClient
-import io.ktor.client.engine.okhttp.OkHttp
+import io.ktor.client.engine.android.Android
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.serialization.kotlinx.json.json
 import kotlinx.serialization.json.Json
@@ -22,7 +22,7 @@ val appModule = module {
 
     single<HttpClient> {
         val jsonConfig = get<Json>()
-        HttpClient(OkHttp) {
+        HttpClient(Android) {
             install(ContentNegotiation) {
                 json(jsonConfig)
             }
