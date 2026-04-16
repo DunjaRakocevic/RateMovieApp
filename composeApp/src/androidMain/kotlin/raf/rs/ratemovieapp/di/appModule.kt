@@ -13,14 +13,14 @@ import raf.rs.ratemovieapp.data.repository.MoviesRepository
 import raf.rs.ratemovieapp.data.repository.MoviesRepositoryImpl
 
 val appModule = module {
-    single {
+    single<Json> {
         Json {
             ignoreUnknownKeys = true
             isLenient = true
         }
     }
 
-    single {
+    single<HttpClient> {
         val jsonConfig = get<Json>()
         HttpClient(OkHttp) {
             install(ContentNegotiation) {
@@ -29,8 +29,7 @@ val appModule = module {
         }
     }
 
-    single<MoviesApi> { MoviesApiImpl(get()) }
-    single<MoviesRepository> { MoviesRepositoryImpl(get(), get()) }
+    single<MoviesApi> { MoviesApiImpl(get<HttpClient>()) }
+    single<MoviesRepository> { MoviesRepositoryImpl(get<MoviesApi>(), get<Json>()) }
 //    single<MoviesApi> { get<Ktorfit>().create() }
-    single<MoviesRepository> { MoviesRepositoryImpl(get(), get()) }
 }
