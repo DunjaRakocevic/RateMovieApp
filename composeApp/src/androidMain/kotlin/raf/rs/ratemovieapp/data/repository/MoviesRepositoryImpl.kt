@@ -154,10 +154,7 @@ class MoviesRepositoryImpl(
     override suspend fun getMovieBackdrops(id: String): Result<List<MovieImage>> = runCatching {
         ensureImageBuilder()
         val response = json.parseToJsonElement(api.getMovieImages(id, type = "backdrop"))
-        val images = when (response) {
-            is JsonObject -> (response["backdrops"] as? JsonArray)?.mapNotNull { it as? JsonObject } ?: emptyList()
-            else -> response.asItemArray()
-        }
+        val images = response.asBackdropArray()
         images.map { imageObj ->
             MovieImage(
                 fileUrl = toBackdropUrl(
@@ -253,6 +250,14 @@ private fun JsonElement.firstCommaSeparatedValue(key: String): String? =
         ?.map { it.trim() }
         ?.firstOrNull { it.isNotBlank() }
 
+private fun JsonElement.asBackdropArray(): List<JsonObject> = when (this) {
+    is JsonObject -> {
+        val backdrops = this["backdrops"] as? JsonArray ?: return emptyList()
+        backdrops.mapNotNull { it as? JsonObject }
+    }
+    else -> asItemArray()
+}
+
 private fun JsonElement.asItemArray(): List<JsonObject> {
     return when (this) {
         is JsonArray -> this.mapNotNull { it as? JsonObject }
@@ -312,7 +317,5 @@ private fun JsonObject.genres(): List<Genre> {
 private fun String.digitsAsIntOrNull(): Int? {
     val digits = filter { it.isDigit() }
     if (digits.isBlank()) return null
-    return digits.toLongOrNull()
-        ?.coerceAtMost(Int.MAX_VALUE.toLong())
-        ?.toInt()
+    return digits.toIntOrNull()
 }
