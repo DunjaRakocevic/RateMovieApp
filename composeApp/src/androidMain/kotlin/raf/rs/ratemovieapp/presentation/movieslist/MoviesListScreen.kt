@@ -83,7 +83,7 @@ fun MoviesListScreen(
                         }
                     ) {
                         IconButton(onClick = { onEvent(Event.FilterClicked) }) {
-                            Text("Filter")
+                            Text(if (s.activeFiltersCount > 0) "Filter (${s.activeFiltersCount})" else "Filter")
                         }
                     }
                 }

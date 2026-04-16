@@ -253,7 +253,7 @@ private fun JsonObject.genres(): List<Genre> {
                     if (item.isString) {
                         val raw = item.contentOrNull ?: return@mapNotNull null
                         val id = raw.toIntOrNull() ?: return@mapNotNull null
-                        Genre(id, "")
+                        Genre(id, "Genre #$id")
                     } else null
                 }
                 else -> null

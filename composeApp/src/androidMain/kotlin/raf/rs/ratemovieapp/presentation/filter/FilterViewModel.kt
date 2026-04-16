@@ -65,7 +65,7 @@ class FilterViewModel(
 
             is Event.MinRatingChanged ->
                 _state.updateAndPersist {
-                    it.copy(draft = it.draft.copy(minRating = event.value.takeIf { value -> value >= 0f }))
+                    it.copy(draft = it.draft.copy(minRating = event.value.takeIf { rating -> rating >= 0f }))
                 }
 
             Event.ClearAll ->
