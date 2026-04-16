@@ -26,10 +26,10 @@ class MovieDetailsViewModel(
     private val _effects = Channel<Effect>(Channel.BUFFERED)
     val effects: Flow<Effect> = _effects.receiveAsFlow()
 
-    private var movieId: Int? = savedStateHandle.get<Int>(KEY_MOVIE_ID)
+    private var movieId: String? = savedStateHandle.get<String>(KEY_MOVIE_ID)
     private var loadJob: Job? = null
 
-    fun setMovieId(id: Int) {
+    fun setMovieId(id: String) {
         if (movieId == id) return
         movieId = id
         savedStateHandle[KEY_MOVIE_ID] = id

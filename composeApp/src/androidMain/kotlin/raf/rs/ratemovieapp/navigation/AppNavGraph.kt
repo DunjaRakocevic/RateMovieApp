@@ -68,9 +68,9 @@ fun AppNavGraph() {
 
         composable(
             route = "${Destinations.MOVIE_DETAILS}/{${Destinations.ARG_MOVIE_ID}}",
-            arguments = listOf(navArgument(Destinations.ARG_MOVIE_ID) { type = NavType.IntType })
+            arguments = listOf(navArgument(Destinations.ARG_MOVIE_ID) { type = NavType.StringType })
         ) { entry ->
-            val id = entry.arguments?.getInt(Destinations.ARG_MOVIE_ID) ?: return@composable
+            val id = entry.arguments?.getString(Destinations.ARG_MOVIE_ID) ?: return@composable
             val vm: MovieDetailsViewModel = koinViewModel()
 
             LaunchedEffect(id) { vm.setMovieId(id) }

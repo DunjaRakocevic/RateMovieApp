@@ -12,7 +12,7 @@ import androidx.compose.ui.Modifier
 @Composable
 fun MoviesListScreenStub(
     onOpenFilters: () -> Unit,
-    onOpenDetails: (Int) -> Unit
+    onOpenDetails: (String) -> Unit
 ) {
     Column(
         modifier = Modifier.fillMaxSize(),
@@ -25,8 +25,8 @@ fun MoviesListScreenStub(
             Text("Open Filters")
         }
 
-        Button(onClick = { onOpenDetails(1) }) {
-            Text("Open Details (movieId=1)")
+        Button(onClick = { onOpenDetails("tt1") }) {
+            Text("Open Details (movieId=tt1)")
         }
     }
 }

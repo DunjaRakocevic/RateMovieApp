@@ -23,23 +23,23 @@ interface MoviesApi {
     suspend fun getConfig(): String
 
     @GET("movies/{id}")
-    suspend fun getMovieDetails(@Path("id") id: Int): String
+    suspend fun getMovieDetails(@Path("id") id: String): String
 
     @GET("movies/{id}/cast")
     suspend fun getMovieCast(
-        @Path("id") id: Int,
+        @Path("id") id: String,
         @Query("page_size") pageSize: Int = 10
     ): String
 
     @GET("movies/{id}/images")
     suspend fun getMovieImages(
-        @Path("id") id: Int,
+        @Path("id") id: String,
         @Query("type") type: String = "backdrop"
     ): String
 
     @GET("movies/{id}/videos")
     suspend fun getMovieVideos(
-        @Path("id") id: Int,
+        @Path("id") id: String,
         @Query("type") type: String = "Trailer"
     ): String
 }
