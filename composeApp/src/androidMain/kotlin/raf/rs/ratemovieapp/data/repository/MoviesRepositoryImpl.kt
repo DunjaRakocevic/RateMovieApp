@@ -28,7 +28,6 @@ class MoviesRepositoryImpl(
 ) : MoviesRepository {
 
     private val configMutex = Mutex()
-    @Volatile
     private var imageBuilder: ImageUrlBuilder? = null
 
     override suspend fun getMovies(
@@ -251,9 +250,7 @@ private fun JsonObject.genres(): List<Genre> {
                 }
                 is JsonPrimitive -> {
                     if (item.isString) {
-                        val raw = item.contentOrNull ?: return@mapNotNull null
-                        val id = raw.toIntOrNull() ?: return@mapNotNull null
-                        Genre(id, "Genre #$id")
+                        null
                     } else null
                 }
                 else -> null
