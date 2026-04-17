@@ -317,26 +317,38 @@ private fun JsonObject.genres(
     genreIdsByName: Map<String, Int>
 ): List<Genre> {
     val result = mutableListOf<Genre>()
+    val usedIds = mutableSetOf<Int>()
+    val usedNames = mutableSetOf<String>()
 
     fun addById(id: Int) {
         val name = genresById[id] ?: "Unknown"
-        if (result.none { it.id == id }) result += Genre(id, name)
+        if (usedIds.add(id)) {
+            result += Genre(id, name)
+            usedNames += name.lowercase()
+        }
     }
 
     fun addByName(nameRaw: String) {
         val name = nameRaw.trim()
         if (name.isBlank()) return
-        val mappedId = genreIdsByName[name.lowercase()]
+        val normalizedName = name.lowercase()
+        val mappedId = genreIdsByName[normalizedName]
         if (mappedId != null) {
             addById(mappedId)
             return
         }
-        if (result.none { it.name.equals(name, ignoreCase = true) }) {
+        if (usedNames.add(normalizedName)) {
             var unknownId = unknownGenreId(name)
-            while (genresById.containsKey(unknownId) || result.any { it.id == unknownId }) {
+            var attempts = 0
+            while ((genresById.containsKey(unknownId) || usedIds.contains(unknownId)) && attempts < 10_000) {
                 unknownId -= 1
+                attempts += 1
+            }
+            if (genresById.containsKey(unknownId) || usedIds.contains(unknownId)) {
+                return
             }
             result += Genre(unknownId, name)
+            usedIds += unknownId
         }
     }
 
