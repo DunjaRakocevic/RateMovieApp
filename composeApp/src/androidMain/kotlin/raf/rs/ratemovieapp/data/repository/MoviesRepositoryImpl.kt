@@ -317,7 +317,6 @@ private fun JsonObject.genres(
     genreIdsByName: Map<String, Int>
 ): List<Genre> {
     val result = mutableListOf<Genre>()
-    var fallbackId = -1_000_000
 
     fun addById(id: Int) {
         val name = genresById[id] ?: "Unknown"
@@ -333,7 +332,11 @@ private fun JsonObject.genres(
             return
         }
         if (result.none { it.name.equals(name, ignoreCase = true) }) {
-            result += Genre(fallbackId--, name)
+            var unknownId = unknownGenreId(name)
+            while (genresById.containsKey(unknownId) || result.any { it.id == unknownId }) {
+                unknownId -= 1
+            }
+            result += Genre(unknownId, name)
         }
     }
 
@@ -373,6 +376,11 @@ private fun JsonObject.genres(
     parseElement(this["genre"])
 
     return result
+}
+
+private fun unknownGenreId(name: String): Int {
+    val hash = name.lowercase().hashCode()
+    return -kotlin.math.abs(hash).coerceAtLeast(1)
 }
 
 private fun String.digitsAsIntOrNull(): Int? {
