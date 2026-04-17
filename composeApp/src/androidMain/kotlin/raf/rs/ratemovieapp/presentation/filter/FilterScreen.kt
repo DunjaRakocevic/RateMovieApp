@@ -23,21 +23,24 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
+import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Slider
+import androidx.compose.material3.SliderDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
@@ -50,7 +53,14 @@ import raf.rs.ratemovieapp.presentation.filter.FilterContract.Effect
 import raf.rs.ratemovieapp.presentation.filter.FilterContract.Event
 import raf.rs.ratemovieapp.presentation.filter.FilterContract.State
 import raf.rs.ratemovieapp.presentation.filter.FilterContract.Status
-import raf.rs.ratemovieapp.ui.theme.C_CtaRed
+import raf.rs.ratemovieapp.ui.theme.C_DarkBg
+import raf.rs.ratemovieapp.ui.theme.C_DarkSurface
+import raf.rs.ratemovieapp.ui.theme.C_DarkSurface2
+import raf.rs.ratemovieapp.ui.theme.C_Divider
+import raf.rs.ratemovieapp.ui.theme.C_OnDark
+import raf.rs.ratemovieapp.ui.theme.C_OnDarkMuted
+import raf.rs.ratemovieapp.ui.theme.C_Primary
+import raf.rs.ratemovieapp.ui.theme.C_Secondary
 import raf.rs.ratemovieapp.ui.theme.C_Yellow
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
@@ -64,6 +74,15 @@ fun FilterScreen(
     onBack: () -> Unit
 ) {
     val s by state.collectAsState()
+    val fieldColors = OutlinedTextFieldDefaults.colors(
+        focusedBorderColor = C_Secondary,
+        unfocusedBorderColor = C_Divider,
+        cursorColor = C_Secondary,
+        focusedTextColor = C_OnDark,
+        unfocusedTextColor = C_OnDark,
+        focusedPlaceholderColor = C_OnDarkMuted,
+        unfocusedPlaceholderColor = C_OnDarkMuted
+    )
 
     LaunchedEffect(initialDraft) { onEvent(Event.InitializeDraft(initialDraft)) }
     LaunchedEffect(Unit) { onEvent(Event.ScreenStarted) }
@@ -78,17 +97,22 @@ fun FilterScreen(
     }
 
     Scaffold(
+        containerColor = C_DarkBg,
         topBar = {
             TopAppBar(
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = C_DarkSurface,
+                    titleContentColor = C_OnDark
+                ),
                 title = { Text("Filter Movies", fontWeight = FontWeight.Bold) },
                 navigationIcon = {
                     IconButton(onClick = { onEvent(Event.Back) }) {
-                        Text("←", fontSize = 20.sp, fontWeight = FontWeight.Bold)
+                        Text("←", fontSize = 20.sp, fontWeight = FontWeight.Bold, color = C_OnDark)
                     }
                 },
                 actions = {
                     TextButton(onClick = { onEvent(Event.ClearAll) }) {
-                        Text("Clear All", color = C_CtaRed, fontWeight = FontWeight.SemiBold)
+                        Text("Clear All", color = C_Secondary, fontWeight = FontWeight.SemiBold)
                     }
                 }
             )
@@ -117,7 +141,8 @@ fun FilterScreen(
                 placeholder = { Text("Search by movie title...") },
                 modifier = Modifier.fillMaxWidth(),
                 singleLine = true,
-                shape = RoundedCornerShape(50.dp)
+                shape = RoundedCornerShape(50.dp),
+                colors = fieldColors
             )
 
             // GENRE
@@ -149,13 +174,25 @@ fun FilterScreen(
                         FilterChip(
                             selected = s.draft.genreId == null,
                             onClick = { onEvent(Event.GenreSelected(null)) },
-                            label = { Text("All") }
+                            label = { Text("All") },
+                            colors = FilterChipDefaults.filterChipColors(
+                                selectedContainerColor = C_Primary,
+                                selectedLabelColor = C_OnDark,
+                                containerColor = C_DarkSurface2,
+                                labelColor = C_OnDarkMuted
+                            )
                         )
                         s.genres.forEach { g ->
                             FilterChip(
                                 selected = s.draft.genreId == g.id,
                                 onClick = { onEvent(Event.GenreSelected(g.id)) },
-                                label = { Text(g.name) }
+                                label = { Text(g.name) },
+                                colors = FilterChipDefaults.filterChipColors(
+                                    selectedContainerColor = C_Primary,
+                                    selectedLabelColor = C_OnDark,
+                                    containerColor = C_DarkSurface2,
+                                    labelColor = C_OnDarkMuted
+                                )
                             )
                         }
                     }
@@ -191,7 +228,8 @@ fun FilterScreen(
                             fontSize = 16.sp
                         ),
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                        shape = RoundedCornerShape(8.dp)
+                        shape = RoundedCornerShape(8.dp),
+                        colors = fieldColors
                     )
                 }
                 Text("—", style = MaterialTheme.typography.titleMedium)
@@ -213,7 +251,8 @@ fun FilterScreen(
                             fontSize = 16.sp
                         ),
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                        shape = RoundedCornerShape(8.dp)
+                        shape = RoundedCornerShape(8.dp),
+                        colors = fieldColors
                     )
                 }
             }
@@ -233,7 +272,12 @@ fun FilterScreen(
                     value = s.draft.minRating ?: 0f,
                     onValueChange = { onEvent(Event.MinRatingChanged(it)) },
                     valueRange = 0f..10f,
-                    modifier = Modifier.weight(1f)
+                    modifier = Modifier.weight(1f),
+                    colors = SliderDefaults.colors(
+                        thumbColor = C_Secondary,
+                        activeTrackColor = C_Secondary,
+                        inactiveTrackColor = C_Divider
+                    )
                 )
                 Box(
                     modifier = Modifier
@@ -264,14 +308,14 @@ fun FilterScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(52.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = C_CtaRed),
+                colors = ButtonDefaults.buttonColors(containerColor = C_Primary),
                 shape = RoundedCornerShape(12.dp)
             ) {
                 Text(
                     "Apply Filters",
                     fontWeight = FontWeight.Bold,
                     fontSize = 16.sp,
-                    color = Color.White
+                    color = C_OnDark
                 )
             }
 
