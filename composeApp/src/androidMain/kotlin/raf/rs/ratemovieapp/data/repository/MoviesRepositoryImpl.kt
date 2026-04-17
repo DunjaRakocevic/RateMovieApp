@@ -82,7 +82,7 @@ class MoviesRepositoryImpl(
             )
         }
 
-        coroutineScope {
+        val enrichedMovies = coroutineScope {
             movies.map { movie ->
                 async {
                     enrichMovieFromDetailsIfMissing(
@@ -93,6 +93,8 @@ class MoviesRepositoryImpl(
                 }
             }.awaitAll()
         }
+
+        enrichedMovies
     }
 
     override suspend fun getGenres(): Result<List<Genre>> = runCatching {
@@ -276,8 +278,6 @@ class MoviesRepositoryImpl(
 
         val runtime = if (movie.runtimeMinutes > 0) movie.runtimeMinutes else details.runtime()
         val genres = if (movie.genres.isNotEmpty()) movie.genres else details.genres(genresById, genreIdsByName)
-
-        if (runtime == movie.runtimeMinutes && genres == movie.genres) return movie
         return movie.copy(runtimeMinutes = runtime, genres = genres)
     }
 }
