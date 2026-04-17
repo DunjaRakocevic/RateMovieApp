@@ -1,5 +1,8 @@
 package raf.rs.ratemovieapp.data.repository
 
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.serialization.json.Json
@@ -52,7 +55,7 @@ class MoviesRepositoryImpl(
             minRating = filters.minRating
         ))
 
-        response.asItemArray().mapNotNull { movieObj ->
+        val movies = response.asItemArray().mapNotNull { movieObj ->
             val id = movieObj.string("imdbId")
                 ?: movieObj.string("imdb_id")
                 ?: movieObj.string("id")
@@ -77,6 +80,18 @@ class MoviesRepositoryImpl(
                 ),
                 genres = movieObj.genres(genresById, genreIdsByName)
             )
+        }
+
+        coroutineScope {
+            movies.map { movie ->
+                async {
+                    enrichMovieFromDetailsIfMissing(
+                        movie = movie,
+                        genresById = genresById,
+                        genreIdsByName = genreIdsByName
+                    )
+                }
+            }.awaitAll()
         }
     }
 
@@ -246,6 +261,24 @@ class MoviesRepositoryImpl(
         if (pathOrUrl.isNullOrBlank()) return null
         if (pathOrUrl.startsWith("http")) return pathOrUrl
         return imageBuilder?.backdrop(pathOrUrl) ?: pathOrUrl
+    }
+
+    private suspend fun enrichMovieFromDetailsIfMissing(
+        movie: Movie,
+        genresById: Map<Int, String>,
+        genreIdsByName: Map<String, Int>
+    ): Movie {
+        if (movie.runtimeMinutes > 0 && movie.genres.isNotEmpty()) return movie
+
+        val details = runCatching {
+            json.parseToJsonElement(api.getMovieDetails(movie.id)).asObject()
+        }.getOrNull() ?: return movie
+
+        val runtime = if (movie.runtimeMinutes > 0) movie.runtimeMinutes else details.runtime()
+        val genres = if (movie.genres.isNotEmpty()) movie.genres else details.genres(genresById, genreIdsByName)
+
+        if (runtime == movie.runtimeMinutes && genres == movie.genres) return movie
+        return movie.copy(runtimeMinutes = runtime, genres = genres)
     }
 }
 
