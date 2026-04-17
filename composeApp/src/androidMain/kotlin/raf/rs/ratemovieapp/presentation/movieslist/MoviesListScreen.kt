@@ -8,20 +8,18 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.AssistChip
-import androidx.compose.material3.AssistChipDefaults
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -48,6 +46,7 @@ import coil.compose.AsyncImage
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.StateFlow
 import raf.rs.ratemovieapp.data.model.Movie
+import raf.rs.ratemovieapp.presentation.components.GenreChip
 import raf.rs.ratemovieapp.presentation.components.formatVotes
 import raf.rs.ratemovieapp.presentation.movieslist.MoviesListContract.Effect
 import raf.rs.ratemovieapp.presentation.movieslist.MoviesListContract.Event
@@ -161,7 +160,7 @@ private fun MovieListItem(movie: Movie, onClick: () -> Unit) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .height(140.dp)
+            .heightIn(min = 140.dp)
             .background(
                 color = MaterialTheme.colorScheme.surfaceVariant,
                 shape = RoundedCornerShape(12.dp)
@@ -174,7 +173,8 @@ private fun MovieListItem(movie: Movie, onClick: () -> Unit) {
             contentDescription = movie.title,
             modifier = Modifier
                 .width(85.dp)
-                .fillMaxHeight()
+                .height(120.dp)
+                .align(Alignment.CenterVertically)
                 .background(
                     color = MaterialTheme.colorScheme.surface,
                     shape = RoundedCornerShape(8.dp)
@@ -184,7 +184,7 @@ private fun MovieListItem(movie: Movie, onClick: () -> Unit) {
 
         Spacer(Modifier.width(10.dp))
 
-        Column(modifier = Modifier.fillMaxSize(), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+        Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
             Text(
                 movie.title,
                 style = MaterialTheme.typography.titleMedium,
@@ -223,21 +223,7 @@ private fun MovieListItem(movie: Movie, onClick: () -> Unit) {
                 horizontalArrangement = Arrangement.spacedBy(4.dp)
             ) {
                 movie.genres.take(3).forEach { genre ->
-                    AssistChip(
-                        onClick = {},
-                        label = {
-                            Text(
-                                genre.name,
-                                style = MaterialTheme.typography.labelSmall,
-                                maxLines = 1,
-                                overflow = TextOverflow.Ellipsis
-                            )
-                        },
-                        shape = RoundedCornerShape(50.dp),
-                        colors = AssistChipDefaults.assistChipColors(
-                            containerColor = MaterialTheme.colorScheme.surface
-                        )
-                    )
+                    GenreChip(text = genre.name)
                 }
             }
         }
