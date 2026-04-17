@@ -312,6 +312,8 @@ private fun JsonObject.firstStringFromArray(name: String): String? {
         .firstOrNull { it.isNotBlank() }
 }
 
+private const val MAX_GENRE_ID_COLLISION_ATTEMPTS = 10_000
+
 private fun JsonObject.genres(
     genresById: Map<Int, String>,
     genreIdsByName: Map<String, Int>
@@ -391,11 +393,10 @@ private fun JsonObject.genres(
 }
 
 private fun unknownGenreId(name: String): Int {
-    val hash = name.lowercase().hashCode()
-    return -(kotlin.math.abs(hash).coerceAtLeast(1))
+    val hash = name.lowercase().hashCode().toLong()
+    val magnitude = kotlin.math.abs(hash).coerceAtLeast(1L)
+    return (-magnitude).coerceIn(Int.MIN_VALUE.toLong(), -1L).toInt()
 }
-
-private const val MAX_GENRE_ID_COLLISION_ATTEMPTS = 10_000
 
 private fun String.digitsAsIntOrNull(): Int? {
     val digits = filter { it.isDigit() }
