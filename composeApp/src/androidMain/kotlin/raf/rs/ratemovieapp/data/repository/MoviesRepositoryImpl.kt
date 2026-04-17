@@ -340,7 +340,7 @@ private fun JsonObject.genres(
         if (usedNames.add(normalizedName)) {
             var unknownId = unknownGenreId(name)
             var attempts = 0
-            while ((genresById.containsKey(unknownId) || usedIds.contains(unknownId)) && attempts < 10_000) {
+            while ((genresById.containsKey(unknownId) || usedIds.contains(unknownId)) && attempts < MAX_GENRE_ID_COLLISION_ATTEMPTS) {
                 unknownId -= 1
                 attempts += 1
             }
@@ -392,8 +392,10 @@ private fun JsonObject.genres(
 
 private fun unknownGenreId(name: String): Int {
     val hash = name.lowercase().hashCode()
-    return -kotlin.math.abs(hash).coerceAtLeast(1)
+    return -(kotlin.math.abs(hash).coerceAtLeast(1))
 }
+
+private const val MAX_GENRE_ID_COLLISION_ATTEMPTS = 10_000
 
 private fun String.digitsAsIntOrNull(): Int? {
     val digits = filter { it.isDigit() }
