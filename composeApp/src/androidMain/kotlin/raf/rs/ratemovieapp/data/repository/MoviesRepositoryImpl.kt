@@ -4,7 +4,9 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.Semaphore
 import kotlinx.coroutines.sync.withLock
+import kotlinx.coroutines.sync.withPermit
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonElement
@@ -34,6 +36,9 @@ class MoviesRepositoryImpl(
     private var imageBuilder: ImageUrlBuilder? = null
     private val genresMutex = Mutex()
     private var genreNamesById: Map<Int, String>? = null
+    private val enrichmentSemaphore = Semaphore(permits = 4)
+    private val movieDetailsSummaryMutex = Mutex()
+    private val movieDetailsSummaryCache = mutableMapOf<String, Pair<Int, List<Genre>>>()
 
     override suspend fun getMovies(
         pageSize: Int,
@@ -85,11 +90,13 @@ class MoviesRepositoryImpl(
         val enrichedMovies = coroutineScope {
             movies.map { movie ->
                 async {
-                    enrichMovieFromDetailsIfMissing(
-                        movie = movie,
-                        genresById = genresById,
-                        genreIdsByName = genreIdsByName
-                    )
+                    enrichmentSemaphore.withPermit {
+                        enrichMovieFromDetailsIfMissing(
+                            movie = movie,
+                            genresById = genresById,
+                            genreIdsByName = genreIdsByName
+                        )
+                    }
                 }
             }.awaitAll()
         }
@@ -272,12 +279,26 @@ class MoviesRepositoryImpl(
     ): Movie {
         if (movie.runtimeMinutes > 0 && movie.genres.isNotEmpty()) return movie
 
+        val cachedSummary = movieDetailsSummaryMutex.withLock { movieDetailsSummaryCache[movie.id] }
+        if (cachedSummary != null) {
+            val (cachedRuntime, cachedGenres) = cachedSummary
+            val runtime = if (movie.runtimeMinutes > 0) movie.runtimeMinutes else cachedRuntime
+            val genres = if (movie.genres.isNotEmpty()) movie.genres else cachedGenres
+            return movie.copy(runtimeMinutes = runtime, genres = genres)
+        }
+
         val details = runCatching {
             json.parseToJsonElement(api.getMovieDetails(movie.id)).asObject()
         }.getOrNull() ?: return movie
 
-        val runtime = if (movie.runtimeMinutes > 0) movie.runtimeMinutes else details.runtime()
-        val genres = if (movie.genres.isNotEmpty()) movie.genres else details.genres(genresById, genreIdsByName)
+        val detailsRuntime = details.runtime()
+        val detailsGenres = details.genres(genresById, genreIdsByName)
+        movieDetailsSummaryMutex.withLock {
+            movieDetailsSummaryCache[movie.id] = detailsRuntime to detailsGenres
+        }
+
+        val runtime = if (movie.runtimeMinutes > 0) movie.runtimeMinutes else detailsRuntime
+        val genres = if (movie.genres.isNotEmpty()) movie.genres else detailsGenres
         return movie.copy(runtimeMinutes = runtime, genres = genres)
     }
 }
