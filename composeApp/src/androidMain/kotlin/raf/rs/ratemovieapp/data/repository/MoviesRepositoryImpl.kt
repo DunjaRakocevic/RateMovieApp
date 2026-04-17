@@ -36,7 +36,7 @@ class MoviesRepositoryImpl(
     private var imageBuilder: ImageUrlBuilder? = null
     private val genresMutex = Mutex()
     private var genreNamesById: Map<Int, String>? = null
-    private val enrichmentSemaphore = Semaphore(permits = 4)
+    private val enrichmentSemaphore = Semaphore(permits = ENRICHMENT_CONCURRENCY)
     private val movieDetailsSummaryMutex = Mutex()
     private val movieDetailsSummaryCache = mutableMapOf<String, Pair<Int, List<Genre>>>()
 
@@ -300,6 +300,10 @@ class MoviesRepositoryImpl(
         val runtime = if (movie.runtimeMinutes > 0) movie.runtimeMinutes else detailsRuntime
         val genres = if (movie.genres.isNotEmpty()) movie.genres else detailsGenres
         return movie.copy(runtimeMinutes = runtime, genres = genres)
+    }
+
+    private companion object {
+        const val ENRICHMENT_CONCURRENCY = 4
     }
 }
 
