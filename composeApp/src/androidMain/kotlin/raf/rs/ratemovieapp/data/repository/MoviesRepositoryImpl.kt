@@ -40,6 +40,7 @@ class MoviesRepositoryImpl(
     ): Result<List<Movie>> = runCatching {
         ensureImageBuilder()
         val genresById = ensureGenresById()
+        val genreIdsByName = genresById.entries.associate { it.value.lowercase() to it.key }
         val response = json.parseToJsonElement(api.getMovies(
             pageSize = pageSize,
             sortBy = sortBy,
@@ -74,7 +75,7 @@ class MoviesRepositoryImpl(
                         ?: movieObj.string("poster")
                         ?: movieObj.string("poster_url")
                 ),
-                genres = movieObj.genres(genresById)
+                genres = movieObj.genres(genresById, genreIdsByName)
             )
         }
     }
@@ -89,6 +90,7 @@ class MoviesRepositoryImpl(
     override suspend fun getMovieDetails(id: String): Result<MovieDetails> = runCatching {
         ensureImageBuilder()
         val genresById = ensureGenresById()
+        val genreIdsByName = genresById.entries.associate { it.value.lowercase() to it.key }
         val obj = json.parseToJsonElement(api.getMovieDetails(id)).asObject()
         MovieDetails(
             id = obj.string("imdbId")
@@ -109,7 +111,7 @@ class MoviesRepositoryImpl(
                 ?: obj.float("tmdb_rating")
                 ?: obj.float("vote_average")
                 ?: 0f,
-            genres = obj.genres(genresById),
+            genres = obj.genres(genresById, genreIdsByName),
             posterUrl = toPosterUrl(
                 obj.string("posterPath")
                     ?: obj.string("poster_path")
@@ -310,10 +312,12 @@ private fun JsonObject.firstStringFromArray(name: String): String? {
         .firstOrNull { it.isNotBlank() }
 }
 
-private fun JsonObject.genres(genresById: Map<Int, String>): List<Genre> {
-    val byName = genresById.entries.associate { it.value.lowercase() to it.key }
+private fun JsonObject.genres(
+    genresById: Map<Int, String>,
+    genreIdsByName: Map<String, Int>
+): List<Genre> {
     val result = mutableListOf<Genre>()
-    var fallbackId = -1
+    var fallbackId = -1_000_000
 
     fun addById(id: Int) {
         val name = genresById[id] ?: "Unknown"
@@ -323,7 +327,7 @@ private fun JsonObject.genres(genresById: Map<Int, String>): List<Genre> {
     fun addByName(nameRaw: String) {
         val name = nameRaw.trim()
         if (name.isBlank()) return
-        val mappedId = byName[name.lowercase()]
+        val mappedId = genreIdsByName[name.lowercase()]
         if (mappedId != null) {
             addById(mappedId)
             return
