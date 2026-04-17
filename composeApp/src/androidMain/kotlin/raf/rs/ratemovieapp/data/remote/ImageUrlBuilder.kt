@@ -6,10 +6,11 @@ data class ImageConfig(
     val backdropSize: String,
 )
 
-class ImageUrlBuilder(private val config: ImageConfig) {
-    fun poster(filePath: String?): String? =
-        filePath?.let { "${config.baseUrl}${config.posterSize}$it" }
 
-    fun backdrop(filePath: String?): String? =
-        filePath?.let { "${config.baseUrl}${config.backdropSize}$it" }
+
+class ImageUrlBuilder(private val config: ImageConfig) {
+    fun poster(filePath: String?): String? = filePath?.let { "${config.baseUrl}${config.posterSize}$it" }
+    fun backdrop(filePath: String?): String? = filePath?.let { "${config.baseUrl}${config.backdropSize}$it" }
+
+
 }

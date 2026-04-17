@@ -2,7 +2,6 @@ package raf.rs.ratemovieapp.presentation.movieslist
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -15,9 +14,11 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.AssistChip
 import androidx.compose.material3.AssistChipDefaults
@@ -86,12 +87,12 @@ fun MoviesListScreen(
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Text("🎬", fontSize = 20.sp)
                         Spacer(Modifier.width(8.dp))
-                        Text("Premiere", fontWeight = FontWeight.Bold)
+                        Text("RateMovieApp", fontWeight = FontWeight.Bold)
                     }
                 },
                 actions = {
                     val filterLabel = if (s.activeFiltersCount > 0)
-                        "⊞ Filter (${s.activeFiltersCount})" else "⊞ Filter"
+                        "Filter (${s.activeFiltersCount})" else "Filter"
                     Button(
                         onClick = { onEvent(Event.FilterClicked) },
                         colors = ButtonDefaults.buttonColors(containerColor = FilterRed),
@@ -120,7 +121,7 @@ fun MoviesListScreen(
             ) {
                 AssistChip(
                     onClick = { onEvent(Event.SortPillClicked) },
-                    label = { Text("Sort: ${s.sort.label} ↓ ▼") }
+                    label = { Text("Sort: ${s.sort.label} ↓ ") }
                 )
                 Text(s.moviesCountText, style = MaterialTheme.typography.bodyMedium)
             }

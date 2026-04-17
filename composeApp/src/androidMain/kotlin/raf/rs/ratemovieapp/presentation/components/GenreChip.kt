@@ -7,6 +7,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import raf.rs.ratemovieapp.ui.theme.C_DarkSurface2
 import raf.rs.ratemovieapp.ui.theme.C_OnDarkMuted
@@ -17,12 +18,14 @@ fun GenreChip(
     modifier: Modifier = Modifier
 ) {
     AssistChip(
-        onClick = { /* no-op */ },
+        onClick = {},
         label = {
             Text(
                 text = text,
                 style = MaterialTheme.typography.labelSmall,
-                color = C_OnDarkMuted
+                color = C_OnDarkMuted,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
             )
         },
         colors = AssistChipDefaults.assistChipColors(
