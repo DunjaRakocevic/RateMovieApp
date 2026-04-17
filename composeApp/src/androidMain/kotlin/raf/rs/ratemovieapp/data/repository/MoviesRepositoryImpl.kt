@@ -1,7 +1,12 @@
 package raf.rs.ratemovieapp.data.repository
 
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.Semaphore
 import kotlinx.coroutines.sync.withLock
+import kotlinx.coroutines.sync.withPermit
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonElement
@@ -31,6 +36,9 @@ class MoviesRepositoryImpl(
     private var imageBuilder: ImageUrlBuilder? = null
     private val genresMutex = Mutex()
     private var genreNamesById: Map<Int, String>? = null
+    private val enrichmentSemaphore = Semaphore(permits = ENRICHMENT_CONCURRENCY)
+    private val movieDetailsSummaryMutex = Mutex()
+    private val movieDetailsSummaryCache = mutableMapOf<String, Pair<Int, List<Genre>>>()
 
     override suspend fun getMovies(
         pageSize: Int,
@@ -52,7 +60,7 @@ class MoviesRepositoryImpl(
             minRating = filters.minRating
         ))
 
-        response.asItemArray().mapNotNull { movieObj ->
+        val movies = response.asItemArray().mapNotNull { movieObj ->
             val id = movieObj.string("imdbId")
                 ?: movieObj.string("imdb_id")
                 ?: movieObj.string("id")
@@ -78,6 +86,22 @@ class MoviesRepositoryImpl(
                 genres = movieObj.genres(genresById, genreIdsByName)
             )
         }
+
+        val enrichedMovies = coroutineScope {
+            movies.map { movie ->
+                async {
+                    enrichmentSemaphore.withPermit {
+                        enrichMovieFromDetailsIfMissing(
+                            movie = movie,
+                            genresById = genresById,
+                            genreIdsByName = genreIdsByName
+                        )
+                    }
+                }
+            }.awaitAll()
+        }
+
+        enrichedMovies
     }
 
     override suspend fun getGenres(): Result<List<Genre>> = runCatching {
@@ -246,6 +270,40 @@ class MoviesRepositoryImpl(
         if (pathOrUrl.isNullOrBlank()) return null
         if (pathOrUrl.startsWith("http")) return pathOrUrl
         return imageBuilder?.backdrop(pathOrUrl) ?: pathOrUrl
+    }
+
+    private suspend fun enrichMovieFromDetailsIfMissing(
+        movie: Movie,
+        genresById: Map<Int, String>,
+        genreIdsByName: Map<String, Int>
+    ): Movie {
+        if (movie.runtimeMinutes > 0 && movie.genres.isNotEmpty()) return movie
+
+        val cachedSummary = movieDetailsSummaryMutex.withLock { movieDetailsSummaryCache[movie.id] }
+        if (cachedSummary != null) {
+            val (cachedRuntime, cachedGenres) = cachedSummary
+            val runtime = if (movie.runtimeMinutes > 0) movie.runtimeMinutes else cachedRuntime
+            val genres = if (movie.genres.isNotEmpty()) movie.genres else cachedGenres
+            return movie.copy(runtimeMinutes = runtime, genres = genres)
+        }
+
+        val details = runCatching {
+            json.parseToJsonElement(api.getMovieDetails(movie.id)).asObject()
+        }.getOrNull() ?: return movie
+
+        val detailsRuntime = details.runtime()
+        val detailsGenres = details.genres(genresById, genreIdsByName)
+        movieDetailsSummaryMutex.withLock {
+            movieDetailsSummaryCache[movie.id] = detailsRuntime to detailsGenres
+        }
+
+        val runtime = if (movie.runtimeMinutes > 0) movie.runtimeMinutes else detailsRuntime
+        val genres = if (movie.genres.isNotEmpty()) movie.genres else detailsGenres
+        return movie.copy(runtimeMinutes = runtime, genres = genres)
+    }
+
+    private companion object {
+        const val ENRICHMENT_CONCURRENCY = 4
     }
 }
 

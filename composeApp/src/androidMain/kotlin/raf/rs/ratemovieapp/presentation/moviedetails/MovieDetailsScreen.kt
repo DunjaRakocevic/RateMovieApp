@@ -48,9 +48,6 @@ import raf.rs.ratemovieapp.presentation.moviedetails.MovieDetailsContract.Effect
 import raf.rs.ratemovieapp.presentation.moviedetails.MovieDetailsContract.Event
 import raf.rs.ratemovieapp.presentation.moviedetails.MovieDetailsContract.State
 import raf.rs.ratemovieapp.presentation.moviedetails.MovieDetailsContract.Status
-import raf.rs.ratemovieapp.ui.theme.C_CtaRed
-import raf.rs.ratemovieapp.ui.theme.C_Violet
-import raf.rs.ratemovieapp.ui.theme.C_Yellow
 
 @Composable
 fun MovieDetailsScreen(
@@ -115,7 +112,7 @@ fun MovieDetailsScreen(
                             modifier = Modifier
                                 .align(Alignment.Center)
                                 .size(64.dp)
-                                .background(C_CtaRed, CircleShape)
+                                .background(MaterialTheme.colorScheme.primary, CircleShape)
                                 .clickable { onEvent(Event.PlayTrailerClicked) }
                                 .semantics { contentDescription = "Play trailer" },
                             contentAlignment = Alignment.Center
@@ -175,7 +172,7 @@ fun MovieDetailsScreen(
                                         "IMDB rating ${d.imdbRating} with ${d.imdbVotes} votes"
                                 }
                         ) {
-                            Text("★", color = C_Yellow, fontSize = 18.sp)
+                            Text("★", color = MaterialTheme.colorScheme.tertiary, fontSize = 18.sp)
                             Spacer(Modifier.width(4.dp))
                             Text(
                                 "${d.imdbRating}/10",
@@ -191,7 +188,7 @@ fun MovieDetailsScreen(
                             Spacer(Modifier.weight(1f))
                             Text(
                                 "TMDB ${d.tmdbRating}",
-                                color = C_Violet,
+                                color = MaterialTheme.colorScheme.secondary,
                                 fontWeight = FontWeight.SemiBold
                             )
                         }
@@ -202,7 +199,7 @@ fun MovieDetailsScreen(
                                 Box(
                                     modifier = Modifier
                                         .widthIn(max = 100.dp)
-                                        .background(C_CtaRed, RoundedCornerShape(50.dp))
+                                        .background(MaterialTheme.colorScheme.primary, RoundedCornerShape(50.dp))
                                         .padding(horizontal = 12.dp, vertical = 4.dp)
                                 ) {
                                     Text(
