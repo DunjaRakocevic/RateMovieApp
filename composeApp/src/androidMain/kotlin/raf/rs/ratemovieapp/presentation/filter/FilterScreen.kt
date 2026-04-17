@@ -50,9 +50,8 @@ import raf.rs.ratemovieapp.presentation.filter.FilterContract.Effect
 import raf.rs.ratemovieapp.presentation.filter.FilterContract.Event
 import raf.rs.ratemovieapp.presentation.filter.FilterContract.State
 import raf.rs.ratemovieapp.presentation.filter.FilterContract.Status
-
-private val FilterRed = Color(0xFFE11D48)
-private val StarGold = Color(0xFFFFCE1F)
+import raf.rs.ratemovieapp.ui.theme.C_CtaRed
+import raf.rs.ratemovieapp.ui.theme.C_Yellow
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
@@ -89,7 +88,7 @@ fun FilterScreen(
                 },
                 actions = {
                     TextButton(onClick = { onEvent(Event.ClearAll) }) {
-                        Text("Clear All", color = FilterRed, fontWeight = FontWeight.SemiBold)
+                        Text("Clear All", color = C_CtaRed, fontWeight = FontWeight.SemiBold)
                     }
                 }
             )
@@ -248,7 +247,7 @@ fun FilterScreen(
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.spacedBy(4.dp)
                     ) {
-                        Text("★", color = StarGold)
+                        Text("★", color = C_Yellow)
                         Text(
                             String.format("%.1f", s.draft.minRating ?: 0f),
                             fontWeight = FontWeight.Bold
@@ -265,7 +264,7 @@ fun FilterScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(52.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = FilterRed),
+                colors = ButtonDefaults.buttonColors(containerColor = C_CtaRed),
                 shape = RoundedCornerShape(12.dp)
             ) {
                 Text(

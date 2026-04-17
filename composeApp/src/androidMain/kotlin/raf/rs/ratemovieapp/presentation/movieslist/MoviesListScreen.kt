@@ -53,9 +53,8 @@ import raf.rs.ratemovieapp.presentation.movieslist.MoviesListContract.Effect
 import raf.rs.ratemovieapp.presentation.movieslist.MoviesListContract.Event
 import raf.rs.ratemovieapp.presentation.movieslist.MoviesListContract.State
 import raf.rs.ratemovieapp.presentation.movieslist.MoviesListContract.Status
-
-private val FilterRed = Color(0xFFE11D48)
-private val StarGold = Color(0xFFFFCE1F)
+import raf.rs.ratemovieapp.ui.theme.C_CtaRed
+import raf.rs.ratemovieapp.ui.theme.C_Yellow
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -95,7 +94,7 @@ fun MoviesListScreen(
                         "Filter (${s.activeFiltersCount})" else "Filter"
                     Button(
                         onClick = { onEvent(Event.FilterClicked) },
-                        colors = ButtonDefaults.buttonColors(containerColor = FilterRed),
+                        colors = ButtonDefaults.buttonColors(containerColor = C_CtaRed),
                         shape = RoundedCornerShape(50.dp),
                         contentPadding = PaddingValues(horizontal = 16.dp, vertical = 0.dp),
                         modifier = Modifier.height(36.dp)
@@ -207,7 +206,7 @@ private fun MovieListItem(movie: Movie, onClick: () -> Unit) {
                     contentDescription = "IMDB rating ${movie.imdbRating} with ${movie.imdbVotes} votes"
                 }
             ) {
-                Text("★", color = StarGold, fontSize = 14.sp)
+                Text("★", color = C_Yellow, fontSize = 14.sp)
                 Spacer(Modifier.width(4.dp))
                 Text(
                     movie.imdbRating.toString(),
@@ -246,4 +245,3 @@ private fun MovieListItem(movie: Movie, onClick: () -> Unit) {
         }
     }
 }
-
