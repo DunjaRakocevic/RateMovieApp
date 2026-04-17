@@ -29,6 +29,8 @@ class MoviesRepositoryImpl(
 
     private val configMutex = Mutex()
     private var imageBuilder: ImageUrlBuilder? = null
+    private val genresMutex = Mutex()
+    private var genreNamesById: Map<Int, String>? = null
 
     override suspend fun getMovies(
         pageSize: Int,
@@ -37,6 +39,7 @@ class MoviesRepositoryImpl(
         filters: FilterParams
     ): Result<List<Movie>> = runCatching {
         ensureImageBuilder()
+        val genresById = ensureGenresById()
         val response = json.parseToJsonElement(api.getMovies(
             pageSize = pageSize,
             sortBy = sortBy,
@@ -71,7 +74,7 @@ class MoviesRepositoryImpl(
                         ?: movieObj.string("poster")
                         ?: movieObj.string("poster_url")
                 ),
-                genres = movieObj.genres()
+                genres = movieObj.genres(genresById)
             )
         }
     }
@@ -85,6 +88,7 @@ class MoviesRepositoryImpl(
 
     override suspend fun getMovieDetails(id: String): Result<MovieDetails> = runCatching {
         ensureImageBuilder()
+        val genresById = ensureGenresById()
         val obj = json.parseToJsonElement(api.getMovieDetails(id)).asObject()
         MovieDetails(
             id = obj.string("imdbId")
@@ -105,7 +109,7 @@ class MoviesRepositoryImpl(
                 ?: obj.float("tmdb_rating")
                 ?: obj.float("vote_average")
                 ?: 0f,
-            genres = obj.genres(),
+            genres = obj.genres(genresById),
             posterUrl = toPosterUrl(
                 obj.string("posterPath")
                     ?: obj.string("poster_path")
@@ -216,6 +220,20 @@ class MoviesRepositoryImpl(
         }
     }
 
+    private suspend fun ensureGenresById(): Map<Int, String> {
+        return genresMutex.withLock {
+            genreNamesById?.let { return@withLock it }
+            val genres = json.parseToJsonElement(api.getGenres()).asItemArray()
+                .mapNotNull { genreObj ->
+                    val id = genreObj.int("id") ?: return@mapNotNull null
+                    val name = genreObj.string("name") ?: return@mapNotNull null
+                    id to name
+                }
+                .toMap()
+            genres.also { genreNamesById = it }
+        }
+    }
+
     private fun toPosterUrl(pathOrUrl: String?): String? {
         if (pathOrUrl.isNullOrBlank()) return null
         if (pathOrUrl.startsWith("http")) return pathOrUrl
@@ -292,23 +310,65 @@ private fun JsonObject.firstStringFromArray(name: String): String? {
         .firstOrNull { it.isNotBlank() }
 }
 
-private fun JsonObject.genres(): List<Genre> {
-    val rawGenres = this["genres"]
-    return when (rawGenres) {
-        is JsonArray -> rawGenres.mapNotNull { item ->
-            when (item) {
-                is JsonObject -> {
-                    val id = item.int("id") ?: return@mapNotNull null
-                    Genre(id, item.string("name") ?: "Unknown")
-                }
-                is JsonPrimitive -> {
-                    null
-                }
-                else -> null
-            }
-        }
-        else -> emptyList()
+private fun JsonObject.genres(genresById: Map<Int, String>): List<Genre> {
+    val byName = genresById.entries.associate { it.value.lowercase() to it.key }
+    val result = mutableListOf<Genre>()
+    var fallbackId = -1
+
+    fun addById(id: Int) {
+        val name = genresById[id] ?: "Unknown"
+        if (result.none { it.id == id }) result += Genre(id, name)
     }
+
+    fun addByName(nameRaw: String) {
+        val name = nameRaw.trim()
+        if (name.isBlank()) return
+        val mappedId = byName[name.lowercase()]
+        if (mappedId != null) {
+            addById(mappedId)
+            return
+        }
+        if (result.none { it.name.equals(name, ignoreCase = true) }) {
+            result += Genre(fallbackId--, name)
+        }
+    }
+
+    fun parseElement(element: JsonElement?) {
+        when (element) {
+            is JsonObject -> {
+                val id = element.int("id")
+                val name = element.string("name")
+                when {
+                    id != null && id > 0 -> addById(id)
+                    !name.isNullOrBlank() -> addByName(name)
+                }
+            }
+            is JsonPrimitive -> {
+                val raw = element.contentOrNull?.trim().orEmpty()
+                if (raw.isBlank()) return
+                val asId = element.intOrNull ?: raw.toIntOrNull()
+                if (asId != null && asId > 0) {
+                    addById(asId)
+                } else {
+                    raw.split(",")
+                        .map { it.trim() }
+                        .filter { it.isNotBlank() }
+                        .forEach(::addByName)
+                }
+            }
+            is JsonArray -> element.forEach(::parseElement)
+            else -> Unit
+        }
+    }
+
+    parseElement(this["genres"])
+    parseElement(this["genre_ids"])
+    parseElement(this["genreIds"])
+    parseElement(this["genre_names"])
+    parseElement(this["genreNames"])
+    parseElement(this["genre"])
+
+    return result
 }
 
 private fun String.digitsAsIntOrNull(): Int? {
@@ -322,14 +382,24 @@ private fun JsonObject.runtime(): Int {
     val keys = listOf(
         "runtime_minutes",   // most common snake_case key from the API
         "runtimeMinutes",    // camelCase variant some endpoints return
+        "runtime_min",
+        "runtimeMins",
+        "runtimeInMinutes",
         "runtime",
+        "duration_minutes",
+        "durationMinutes",
+        "duration_min",
+        "durationMins",
         "duration",
+        "length_minutes",
         "length"
     )
     for (key in keys) {
         val prim = this[key] as? JsonPrimitive ?: continue
         val asInt = prim.intOrNull
         if (asInt != null && asInt > 0) return asInt
+        val asFloat = prim.floatOrNull
+        if (asFloat != null && asFloat > 0f) return asFloat.toInt()
         val asStr = prim.contentOrNull
         if (!asStr.isNullOrBlank()) {
             val extracted = asStr.filter { it.isDigit() }.toIntOrNull()
