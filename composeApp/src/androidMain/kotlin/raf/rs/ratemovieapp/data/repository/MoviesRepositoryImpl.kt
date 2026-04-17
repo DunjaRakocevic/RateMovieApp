@@ -319,7 +319,13 @@ private fun String.digitsAsIntOrNull(): Int? {
 
 /** Tries every known key name for runtime, accepting both Int and String values like "120 min". */
 private fun JsonObject.runtime(): Int {
-    val keys = listOf("runtime_minutes", "runtimeMinutes", "runtime", "duration", "length")
+    val keys = listOf(
+        "runtime_minutes",   // most common snake_case key from the API
+        "runtimeMinutes",    // camelCase variant some endpoints return
+        "runtime",
+        "duration",
+        "length"
+    )
     for (key in keys) {
         val prim = this[key] as? JsonPrimitive ?: continue
         val asInt = prim.intOrNull

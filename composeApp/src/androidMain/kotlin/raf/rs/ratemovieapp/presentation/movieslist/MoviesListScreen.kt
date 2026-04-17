@@ -231,7 +231,8 @@ private fun MovieListItem(movie: Movie, onClick: () -> Unit) {
                             Text(
                                 genre.name,
                                 style = MaterialTheme.typography.labelSmall,
-                                maxLines = 1
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis
                             )
                         },
                         shape = RoundedCornerShape(50.dp),
