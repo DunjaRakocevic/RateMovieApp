@@ -2,6 +2,7 @@ package raf.rs.ratemovieapp.presentation.movieslist
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -14,9 +15,9 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.AssistChip
 import androidx.compose.material3.AssistChipDefaults
@@ -194,7 +195,8 @@ private fun MovieListItem(movie: Movie, onClick: () -> Unit) {
                 overflow = TextOverflow.Ellipsis
             )
             Text(
-                movie.year.toString(),
+                if (movie.runtimeMinutes > 0) "${movie.year} • ${movie.runtimeMinutes} min"
+                else movie.year.toString(),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
@@ -218,7 +220,10 @@ private fun MovieListItem(movie: Movie, onClick: () -> Unit) {
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
-            Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+            Row(
+                modifier = Modifier.horizontalScroll(rememberScrollState()),
+                horizontalArrangement = Arrangement.spacedBy(4.dp)
+            ) {
                 movie.genres.take(3).forEach { genre ->
                     AssistChip(
                         onClick = {},
@@ -226,15 +231,13 @@ private fun MovieListItem(movie: Movie, onClick: () -> Unit) {
                             Text(
                                 genre.name,
                                 style = MaterialTheme.typography.labelSmall,
-                                maxLines = 1,
-                                overflow = TextOverflow.Ellipsis
+                                maxLines = 1
                             )
                         },
                         shape = RoundedCornerShape(50.dp),
                         colors = AssistChipDefaults.assistChipColors(
                             containerColor = MaterialTheme.colorScheme.surface
-                        ),
-                        modifier = Modifier.widthIn(max = 80.dp)
+                        )
                     )
                 }
             }

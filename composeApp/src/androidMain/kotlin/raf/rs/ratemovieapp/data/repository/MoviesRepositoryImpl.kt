@@ -57,10 +57,7 @@ class MoviesRepositoryImpl(
                 id = id,
                 title = movieObj.string("title") ?: "Unknown",
                 year = movieObj.int("year") ?: movieObj.int("release_year") ?: 0,
-                runtimeMinutes = movieObj.int("runtime_minutes")
-                    ?: movieObj.int("runtime")
-                    ?: movieObj.int("duration")
-                    ?: 0,
+                runtimeMinutes = movieObj.runtime(),
                 imdbRating = movieObj.float("imdbRating")
                     ?: movieObj.float("imdb_rating")
                     ?: 0f,
@@ -97,7 +94,7 @@ class MoviesRepositoryImpl(
             title = obj.string("title") ?: "Unknown",
             overview = obj.string("overview") ?: "",
             year = obj.int("year") ?: obj.int("release_year") ?: 0,
-            runtimeMinutes = obj.int("runtime_minutes") ?: obj.int("runtime") ?: 0,
+            runtimeMinutes = obj.runtime(),
             imdbRating = obj.float("imdbRating")
                 ?: obj.float("imdb_rating")
                 ?: 0f,
@@ -318,4 +315,20 @@ private fun String.digitsAsIntOrNull(): Int? {
     val digits = filter { it.isDigit() }
     if (digits.isBlank()) return null
     return digits.toIntOrNull()
+}
+
+/** Tries every known key name for runtime, accepting both Int and String values like "120 min". */
+private fun JsonObject.runtime(): Int {
+    val keys = listOf("runtime_minutes", "runtimeMinutes", "runtime", "duration", "length")
+    for (key in keys) {
+        val prim = this[key] as? JsonPrimitive ?: continue
+        val asInt = prim.intOrNull
+        if (asInt != null && asInt > 0) return asInt
+        val asStr = prim.contentOrNull
+        if (!asStr.isNullOrBlank()) {
+            val extracted = asStr.filter { it.isDigit() }.toIntOrNull()
+            if (extracted != null && extracted > 0) return extracted
+        }
+    }
+    return 0
 }
